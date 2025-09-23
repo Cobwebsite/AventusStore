@@ -15,7 +15,7 @@ class Controller
     {
         $user = $request->toModel(User::class);
         // $user->verified = true;
-        $user->token_action =  Str::uuid()->toString();
+        $user->token_action =  str_replace("-", "", Str::uuid()->toString());
         $user->save();
         if (Mail::to([$user->email])->send(new ConfirmAccountMail($user)) == null)
             return false;
