@@ -1,0 +1,50 @@
+import type { NormalizedEvent, PressManager } from "Aventus@Main:Aventus.package.avt";
+import type { PackageSimpleResource } from "../../../../generated/app/Http/Controllers/Package/PackageSimpleResource.lib.avt";
+import { Main } from "../../../Main/Main.wcl.avt";
+import { PackagesPageState } from "../../../pages/PackagesPage/PackagesPageState.state.avt";
+
+export class PackageCard extends Aventus.WebComponent implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+    @Attribute()
+    public no_owner!: boolean;
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    @Injectable()
+    public package!: PackageSimpleResource;
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    protected getFromState() {
+        if(this.package.isUser) {
+            return "/user/" + this.package.fromName;
+        }
+        return "/org/" + this.package.fromName;
+    }
+
+
+    /**
+     * 
+     */
+    protected searchTag(e: NormalizedEvent, press: PressManager) {
+        let state = new PackagesPageState();
+        state.search = "#" + press.getElement().innerHTML;
+        Main.instance.navigate(state);
+    }
+    //#endregion
+
+}

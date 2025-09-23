@@ -1,0 +1,15 @@
+import { Request } from './Request.lib.avt';
+import { PackageSimpleResource } from '../PackageSimpleResource.lib.avt';
+
+namespace App.Http.Controllers.Package.Random {
+
+	export class PackageRandomController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(body: Request): Promise<Aventus.ResultWithError<PackageSimpleResource[]>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/package/random`, Aventus.HttpMethod.POST);
+			request.setBody(body);
+			return await request.queryJSON<PackageSimpleResource[]>(this.router);
+		}
+	}
+
+}

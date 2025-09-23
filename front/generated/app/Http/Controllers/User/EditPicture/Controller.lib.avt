@@ -1,0 +1,15 @@
+import { Request } from './Request.lib.avt';
+import { UserDetailsResource } from '../UserDetailsResource.lib.avt';
+
+namespace App.Http.Controllers.User.EditPicture {
+
+	export class UserEditPictureController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(body: Request): Promise<Aventus.ResultWithError<UserDetailsResource>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/user/edit_picture`, Aventus.HttpMethod.POST);
+			request.setBody(body);
+			return await request.queryJSON<UserDetailsResource>(this.router);
+		}
+	}
+
+}

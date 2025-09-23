@@ -1,0 +1,44 @@
+import type { Tab } from "../Tab/Tab.wcl.avt";
+
+export class TabHeader extends Aventus.Layout.Tabs.TabHeader<Tab> implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    @ViewElement()
+    protected countEl!: HTMLSpanElement;
+    @ViewElement()
+    protected iconEl!: MaterialIcon.Icon;
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    /**
+     * @inheritdoc
+     */
+    public override render(): Aventus.Asyncable<void> {
+        this.innerHTML = this.tab.label;
+        if(this.tab.count) {
+            this.countEl.innerHTML = this.tab.count + '';
+        }
+        if(this.tab.icon) {
+            this.iconEl.icon = this.tab.icon;
+        }
+    }
+
+    //#endregion
+
+}

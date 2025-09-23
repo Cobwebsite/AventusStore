@@ -1,0 +1,31 @@
+import { PressManager } from "Aventus@Main:Aventus.package.avt";
+
+export class Button extends Aventus.Form.ButtonElement implements Aventus.DefaultComponent {
+
+    //#region static
+    //#endregion
+
+
+    //#region props
+    @Attribute()
+    public variant?: 'primary' | 'secondary' | 'ghost';
+    @Attribute()
+    public loading!: boolean;
+    //#endregion
+
+
+    //#region variables
+
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+
+    //#endregion
+
+}

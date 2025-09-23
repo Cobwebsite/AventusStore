@@ -1,0 +1,25 @@
+import { UserPicture } from './UserPicture.lib.avt';
+import { Package } from './Package.lib.avt';
+import { Template } from './Template.lib.avt';
+
+namespace App.Models {
+
+	@Convertible()
+	export class User extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.User"; }
+		public id!: number;
+		public username!: string;
+		public email!: string;
+		public bio?: string = undefined;
+		public password!: string;
+		public verified!: boolean;
+		public picture?: UserPicture = undefined;
+		public token_action!: string;
+		public created_date!: Date;
+		public packages!: Package[];
+		public templates!: Template[];
+		private static _current: User | null = null;
+		public static _current_id: number | null = null;
+	}
+
+}

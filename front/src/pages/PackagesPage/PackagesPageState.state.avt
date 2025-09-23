@@ -1,0 +1,11 @@
+export class PackagesPageState extends Aventus.State implements Aventus.IState {
+    public static get state(): string { return "/packages"; }
+    /**
+     * @inheritdoc
+     */
+    public override get name(): string {
+        return PackagesPageState.state;
+    }
+
+    public search: string = "";
+}

@@ -1,0 +1,15 @@
+import { PackageSimpleResource } from '../../Package/PackageSimpleResource.lib.avt';
+import { UserPicture } from '../../../../Models/UserPicture.lib.avt';
+
+namespace App.Http.Controllers.User.Details {
+
+	@Convertible()
+	export class UserDetailsResponse {
+		public static get Fullname(): string { return "App.Http.Controllers.User.Details.Response"; }
+		public packages!: PackageSimpleResource[];
+		public username!: string;
+		public email!: string;
+		public picture?: UserPicture = undefined;
+	}
+
+}

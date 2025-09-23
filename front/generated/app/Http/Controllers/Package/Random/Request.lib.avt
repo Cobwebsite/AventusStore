@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Package.Random {
+
+	export class Request {
+		public number!: number;
+	}
+
+}

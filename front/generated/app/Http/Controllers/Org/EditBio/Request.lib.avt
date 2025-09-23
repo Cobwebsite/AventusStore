@@ -1,0 +1,8 @@
+namespace App.Http.Controllers.Org.EditBio {
+
+	export class Request {
+		public bio?: string = undefined;
+		public name!: string;
+	}
+
+}

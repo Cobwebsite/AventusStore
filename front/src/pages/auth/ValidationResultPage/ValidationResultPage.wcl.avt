@@ -1,0 +1,48 @@
+import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Main } from "../../../Main/Main.wcl.avt";
+
+export class ValidationResultPage extends Page implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+    @Attribute()
+    public is_success!: boolean;
+    //#endregion
+
+
+    //#region variables
+
+    //#endregion
+
+
+    //#region constructor
+    public constructor() {
+        super();
+        this.is_success = location.href.endsWith("success");
+    }
+    //#endregion
+
+
+    //#region methods
+    public override isAllowed(state: Aventus.State): Aventus.Asyncable<boolean | Aventus.State | string> {
+        if(Main.user) {
+            return "/";
+        }
+        return true;
+    }
+    /**
+     * @inheritdoc
+     */
+    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+        return {
+            title: this.is_success ? "Validation success | Aventus Store" : "Validation error | Aventus Store"
+        };
+    }
+
+    //#endregion
+
+}

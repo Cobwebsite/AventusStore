@@ -1,0 +1,49 @@
+import { Modal, type ModalOptions } from "../../../../components/interaction/Modal/Modal.wcl.avt";
+
+
+export class ModalEditBio extends Modal<string> implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    public value: string = "";
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+
+    /**
+     * 
+     */
+    protected save() {
+        this.resolve(this.value);
+    }
+    /**
+    * @inheritdoc
+    */
+    public override configure(): ModalOptions<string> {
+        return {
+            title: "Edit your description",
+            closeWithClick: false,
+            closeWithEsc: true,
+            rejectValue: null,
+        };
+    }
+
+    //#endregion
+
+}

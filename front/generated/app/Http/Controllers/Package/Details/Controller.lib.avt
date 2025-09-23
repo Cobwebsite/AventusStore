@@ -1,0 +1,13 @@
+import { PackageDetailsResource } from '../PackageDetailsResource.lib.avt';
+
+namespace App.Http.Controllers.Package.Details {
+
+	export class PackageDetailsController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(name: string | number): Promise<Aventus.ResultWithError<PackageDetailsResource>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/package/details/${name}`, Aventus.HttpMethod.GET);
+			return await request.queryJSON<PackageDetailsResource>(this.router);
+		}
+	}
+
+}

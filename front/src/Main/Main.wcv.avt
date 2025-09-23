@@ -1,0 +1,7 @@
+<as-header></as-header>
+<av-scrollable floating_scroll class="scroll" auto_hide @element="scrollEl">
+    <div class="scroll-wrapper">
+        <div class="content" @element="contentEl"></div>
+        <as-footer></as-footer>
+    </div>
+</av-scrollable>

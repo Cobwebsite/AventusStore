@@ -1,0 +1,13 @@
+<div class="modal-header">
+    <h3 class="modal-title" id="modal-title">{{ this.options.title }}</h3>
+    if(!this.options.noClose) {
+        <as-button type="button" variant="ghost" class="close-button" @press="reject" aria-label="Close">
+            <mi-icon icon="close" class="close"></mi-icon>
+        </as-button>
+    }
+</div>
+<div class="modal-body">
+    <slot>
+
+    </slot>
+</div>

@@ -1,0 +1,14 @@
+<div class="footer-container">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <mi-icon icon="code" class="footer-icon"></mi-icon>
+            <span class="footer-title">AventusJs</span>
+        </div>
+        <p class="footer-copy">
+            &copy; {{new Date().getFullYear()}} AventusJs. All Rights Reserved.
+        </p>
+        <div class="footer-social">
+            
+        </div>
+    </div>
+</div>

@@ -1,0 +1,12 @@
+namespace App.Models {
+
+	@Convertible()
+	export class RemoteAccess extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.RemoteAccess"; }
+		public user_id!: number;
+		public token!: string;
+		public machine_id!: string;
+		public machine_name!: string;
+	}
+
+}

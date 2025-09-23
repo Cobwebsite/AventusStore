@@ -1,0 +1,17 @@
+import { PackageSimpleResource } from '../Package/PackageSimpleResource.lib.avt';
+import { TemplateSimpleResource } from '../Template/TemplateSimpleResource.lib.avt';
+import { OrganizationPicture } from '../../../Models/OrganizationPicture.lib.avt';
+
+namespace App.Http.Controllers.Org {
+
+	@Convertible()
+	export class OrgDetailsResource {
+		public static get Fullname(): string { return "App.Http.Controllers.Org.OrgDetailsResource"; }
+		public packages!: PackageSimpleResource[];
+		public templates!: TemplateSimpleResource[];
+		public name!: string;
+		public bio?: string = undefined;
+		public picture?: OrganizationPicture = undefined;
+	}
+
+}

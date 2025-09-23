@@ -1,0 +1,13 @@
+namespace App.Http.Controllers.Remote.Package.Publish {
+
+	export enum ErrorEnum {
+		AuthenticationError = 1,
+		UserNotFound = 2,
+		OrganizationNotFound = 3,
+		NameMissedMatch = 4,
+		VersionMissedMatch = 5,
+		VersionBigger = 6,
+		Forbidden = 7
+	}
+
+}

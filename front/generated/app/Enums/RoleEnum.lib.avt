@@ -1,0 +1,8 @@
+namespace App.Enums {
+
+	export enum RoleEnum {
+		Admin = 1,
+		Dev = 2
+	}
+
+}

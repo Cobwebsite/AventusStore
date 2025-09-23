@@ -1,0 +1,26 @@
+<av-router-link state="{{ '/templates/' + this.template.name }}" class="template-card-link">
+    <div class="template-card">
+        <div>
+            <h3 class="template-name">{{ this.template.name }}</h3>
+            <p class="template-description">{{ this.template.description }}</p>
+        </div>
+        <div class="template-footer">
+            <div class="template-tags">
+                for(let tag of this.template.tags) { 
+                    <span class="template-tag" @press="searchTag">{{ tag }}</span>
+                }
+            </div>
+            <div class="template-meta">
+                <av-router-link state="{{this.getFromState()}}" class="template-author">
+                    <as-user-img :user="{username:this.template.fromName, picture: {'uri':this.template.fromImg}}"
+                        class="author-avatar"></as-user-img>
+                    <span>{{ this.template.fromName }}</span>
+                </av-router-link>
+                <div class="template-downloads">
+                    <mi-icon icon="download" class="icon-xs"></mi-icon>
+                    <span>{{ this.template.downloads }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</av-router-link>

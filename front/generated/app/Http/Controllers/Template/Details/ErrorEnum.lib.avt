@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Template.Details {
+
+	export enum ErrorEnum {
+		NotFound = 404
+	}
+
+}

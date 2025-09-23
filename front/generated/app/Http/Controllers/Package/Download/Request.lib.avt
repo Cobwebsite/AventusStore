@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Package.Download {
+
+	export class Request {
+
+	}
+
+}

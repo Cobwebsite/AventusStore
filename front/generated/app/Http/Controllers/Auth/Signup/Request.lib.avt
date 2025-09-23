@@ -1,0 +1,9 @@
+namespace App.Http.Controllers.Auth.Signup {
+
+	export class Request {
+		public username!: string;
+		public email!: string;
+		public password!: string;
+	}
+
+}

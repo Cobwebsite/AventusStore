@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Package.Download {
+
+	export enum ErrorEnum {
+		NotFound = 404
+	}
+
+}

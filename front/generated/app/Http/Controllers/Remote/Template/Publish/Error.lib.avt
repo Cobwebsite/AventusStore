@@ -1,0 +1,10 @@
+import { ErrorEnum } from './ErrorEnum.lib.avt';
+
+namespace App.Http.Controllers.Remote.Template.Publish {
+
+	@Convertible()
+	export class Error extends AventusPhp.AventusError<ErrorEnum>  {
+		public static override get Fullname(): string { return "App.Http.Controllers.Remote.Template.Publish.Error"; }
+	}
+
+}

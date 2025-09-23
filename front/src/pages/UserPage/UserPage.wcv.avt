@@ -1,0 +1,42 @@
+<div class="profile-header">
+    <div class="avatar">
+        <as-user-img :user="this.user" class="img"></as-user-img>
+    </div>
+    <div>
+        <h1 class="username">{{ this.user.username }}</h1>
+        <p class="bio">
+            <span>{{ this.user.bio }}</span>
+        </p>
+        <p class="join-date">Joined on {{ DateTools.printDate(this.user.created_date, undefined, "en-gb") }}</p>
+    </div>
+</div>
+
+<as-tabs>
+    <as-tab label="Packages" count="{{ this.user.packages.length }}">
+        <div class="cards-grid">
+            for(let p of this.user.packages) {
+                <as-package-card :package="p" no_owner></as-package-card>
+            }
+        </div>
+    </as-tab>
+    <as-tab label="Templates" count="{{ this.user.templates.length }}">
+        <div class="cards-grid">
+             for(let p of this.user.templates) {
+                <as-template-card :template="p" no_owner></as-template-card>
+            }
+        </div>
+    </as-tab>
+    <as-tab label="Organizations" count="{{ this.user.organizations.length }}">
+        <div class="list">
+            for(let org of this.user.organizations) {
+                <av-link to="/org/{{org.name}}">
+                    <div class="item">
+                        <span class="name">{{org.name}}</span>
+                        <span>-</span>
+                        <div class="role">{{org.role}}</div>
+                    </div>
+                </av-link>
+            }
+        </div>
+    </as-tab>
+</as-tabs>

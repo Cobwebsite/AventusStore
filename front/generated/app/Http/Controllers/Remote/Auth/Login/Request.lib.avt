@@ -1,0 +1,10 @@
+namespace App.Http.Controllers.Remote.Auth.Login {
+
+	export class Request {
+		public username!: string;
+		public password!: string;
+		public machineId!: string;
+		public machineName!: string;
+	}
+
+}

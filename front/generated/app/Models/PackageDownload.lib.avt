@@ -1,0 +1,15 @@
+import { Package } from './Package.lib.avt';
+
+namespace App.Models {
+
+	@Convertible()
+	export class PackageDownload extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.PackageDownload"; }
+		public package_id!: number;
+		public version!: string;
+		public date!: Date;
+		public downloads!: number;
+		public package!: Package;
+	}
+
+}

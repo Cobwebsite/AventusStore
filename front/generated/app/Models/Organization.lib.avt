@@ -1,0 +1,20 @@
+import { OrganizationPicture } from './OrganizationPicture.lib.avt';
+import { OrganizationUser } from './OrganizationUser.lib.avt';
+import { Package } from './Package.lib.avt';
+import { Template } from './Template.lib.avt';
+
+namespace App.Models {
+
+	@Convertible()
+	export class Organization extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.Organization"; }
+		public id!: number;
+		public name!: string;
+		public bio?: string = undefined;
+		public picture?: OrganizationPicture = undefined;
+		public users!: OrganizationUser[];
+		public packages!: Package[];
+		public templates!: Template[];
+	}
+
+}

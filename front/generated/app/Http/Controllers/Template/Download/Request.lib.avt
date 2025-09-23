@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Template.Download {
+
+	export class Request {
+
+	}
+
+}

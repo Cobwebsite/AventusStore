@@ -1,0 +1,31 @@
+:host {
+	align-items: center;
+	display: flex;
+	height: 32px;
+	inset: 0.5rem 1rem;
+	justify-content: center;
+	width: 100%;
+
+
+	.loader {
+		animation: rotation 1s linear infinite;
+		aspect-ratio: 1;
+		border: 2px solid #FFF;
+		border-bottom-color: transparent;
+		border-radius: 50000px;
+		display: block;
+		height: 100%;
+		max-height: 100%;
+		max-width: 100%;
+	}
+}
+
+@keyframes rotation {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}

@@ -1,0 +1,9 @@
+namespace App.Http.Controllers.Org.Create {
+
+	export class Request {
+		public name!: string;
+		public bio?: string = undefined;
+		public picture?: File = undefined;
+	}
+
+}

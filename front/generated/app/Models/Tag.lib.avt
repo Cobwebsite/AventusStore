@@ -1,0 +1,12 @@
+namespace App.Models {
+
+	/**
+	 * The package that user can download
+	 */
+	@Convertible()
+	export class Tag extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.Tag"; }
+		public name!: string;
+	}
+
+}

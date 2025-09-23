@@ -1,0 +1,15 @@
+import { Request } from './Request.lib.avt';
+import { OrgDetailsResource } from '../OrgDetailsResource.lib.avt';
+
+namespace App.Http.Controllers.Org.EditPicture {
+
+	export class OrgEditPictureController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(body: Request): Promise<Aventus.ResultWithError<OrgDetailsResource>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/org/edit_picture`, Aventus.HttpMethod.POST);
+			request.setBody(body);
+			return await request.queryJSON<OrgDetailsResource>(this.router);
+		}
+	}
+
+}

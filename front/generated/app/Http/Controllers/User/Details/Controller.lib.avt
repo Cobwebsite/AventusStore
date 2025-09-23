@@ -1,0 +1,13 @@
+import { UserDetailsResource } from '../UserDetailsResource.lib.avt';
+
+namespace App.Http.Controllers.User.Details {
+
+	export class UserDetailsController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(name: string | number): Promise<Aventus.ResultWithError<UserDetailsResource>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/user/details/${name}`, Aventus.HttpMethod.GET);
+			return await request.queryJSON<UserDetailsResource>(this.router);
+		}
+	}
+
+}

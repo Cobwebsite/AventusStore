@@ -1,0 +1,102 @@
+<div class="header-container">
+    <av-link to="/" class="logo">
+        <mi-icon icon="code" class="logo-icon"></mi-icon>
+        <span class="logo-text">AventusJs</span>
+    </av-link>
+
+    <nav class="nav-links">
+        <av-link to="/" class="nav-link">
+            <span>Home</span>
+        </av-link>
+        <av-link to="/packages" class="nav-link">
+            <span>Packages</span>
+        </av-link>
+        <av-link to="/templates" class="nav-link">
+            <span>Templates</span>
+        </av-link>
+    </nav>
+
+    <div class="user-actions">
+        if(this.user) {
+            <div class="user-menu-wrapper" tabindex="-1" @element="menuEl" @blur="closeMenu">
+                <button class="user-button" @press="openMenu">
+                    <as-user-img :user="this.user" class="user-avatar"></as-user-img>
+                    <mi-icon icon="keyboard_arrow_down"></mi-icon>
+                </button>
+
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">
+                        <div>Signed in as</div>
+                        <div class="username">{{ this.user?.username }}</div>
+                    </div>
+                    <av-link class="dropdown-item" to="/profile" @click="closeMenu">
+                        My Profile
+                    </av-link>
+                    <button class="dropdown-item" @press="logout">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        }
+        else {
+            <div class="auth-links">
+                <av-link to="/login">
+                    <as-button variant="ghost">Log In</as-button>
+                </av-link>
+                <av-link to="/signup">
+                    <as-button variant="primary">Sign Up</as-button>
+                </av-link>
+            </div>
+        }
+        <button class="mobile-menu" @press="openMobileNav">
+            <mi-icon icon="menu" class="menu-icon"></mi-icon>
+        </button>
+    </div>
+
+    <div class="sidenav">
+        <mi-icon icon="close" class="close" @press="closeMobileNav"></mi-icon>
+         if(this.user) {
+            <div class="connected">
+                <as-user-img :user="this.user" class="user-avatar"></as-user-img>
+                <div class="username">{{ this.user?.username }}</div>
+            </div>
+        }
+        <div class="links">
+            <av-link to="/" class="link">
+                <mi-icon icon="home"></mi-icon>
+                <span>Home</span>
+            </av-link>
+            <av-link to="/packages" class="link">
+                <mi-icon icon="package_2"></mi-icon>
+                <span>Packages</span>
+            </av-link>
+            <av-link to="/templates" class="link">
+                <mi-icon icon="responsive_layout"></mi-icon>
+                <span>Templates</span>
+            </av-link>
+            if(this.user) {
+                <av-link class="link" to="/profile">
+                    <mi-icon icon="person"></mi-icon>
+                    <span>My Profile</span>
+                </av-link>
+                <div class="link" @click="logout">
+                    <mi-icon icon="exit_to_app"></mi-icon>
+                    <span>Logout</span>
+                </div>
+            }
+        </div>
+        if(!this.user) {
+            <div class="auth-links">
+                <av-link to="/login">
+                    <as-button variant="ghost">Log In</as-button>
+                </av-link>
+                <av-link to="/signup">
+                    <as-button variant="primary">Sign Up</as-button>
+                </av-link>
+            </div>
+        }
+    </div>
+
+</div>
+
+<div class="nav-hider" @press="closeMobileNav"></div>

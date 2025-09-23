@@ -1,0 +1,15 @@
+import { Tag } from './Tag.lib.avt';
+import { Package } from './Package.lib.avt';
+
+namespace App.Models {
+
+	@Convertible()
+	export class PackageTag extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.PackageTag"; }
+		public package_id!: number;
+		public tag_id!: number;
+		public tag!: Tag;
+		public package!: Package;
+	}
+
+}

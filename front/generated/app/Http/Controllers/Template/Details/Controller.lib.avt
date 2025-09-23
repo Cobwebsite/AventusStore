@@ -1,0 +1,13 @@
+import { TemplateDetailsResource } from '../TemplateDetailsResource.lib.avt';
+
+namespace App.Http.Controllers.Template.Details {
+
+	export class TemplateDetailsController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(name: string | number): Promise<Aventus.ResultWithError<TemplateDetailsResource>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/template/details/${name}`, Aventus.HttpMethod.GET);
+			return await request.queryJSON<TemplateDetailsResource>(this.router);
+		}
+	}
+
+}

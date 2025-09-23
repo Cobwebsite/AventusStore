@@ -1,0 +1,8 @@
+namespace App.Models {
+
+	@Convertible()
+	export class OrganizationPicture extends AventusPhp.AventusImage  {
+		public static override get Fullname(): string { return "App.Models.OrganizationPicture"; }
+	}
+
+}

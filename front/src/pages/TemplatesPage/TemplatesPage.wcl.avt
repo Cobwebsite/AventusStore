@@ -1,0 +1,133 @@
+import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import type { TemplateSimpleResource } from "../../../generated/app/Http/Controllers/Template/TemplateSimpleResource.lib.avt";
+import { ActionGuard } from "Aventus@Main:Aventus.package.avt";
+import { TemplateSearchController } from "../../../generated/app/Http/Controllers/Template/Search/Controller.lib.avt";
+import { Main } from "../../Main/Main.wcl.avt";
+import { TemplatesPageState } from "./TemplatesPageState.state.avt";
+import { TemplateRandomController } from "../../../generated/app/Http/Controllers/Template/Random/Controller.lib.avt";
+import { Process } from "Aventus@UI:Aventus.package.avt";
+
+export class TemplatesPage extends Page implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+    @Attribute()
+    public loading!: boolean;
+    @Attribute()
+    private page: number = 0;
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    public searchTxt: string = "";
+    @Watch()
+    public searchResult: string = "";
+    @Watch()
+    public templates: TemplateSimpleResource[] = [];
+
+    private templatesRandom?: TemplateSimpleResource[];
+
+    public timeout?: number;
+
+    private elementsByPage: number = 21;
+    private canLoadMore: boolean = false;
+    private guard: ActionGuard = new ActionGuard();
+    private isSearching: boolean = false;
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+
+    /**
+     * 
+     */
+    protected changeSearch() {
+        if(this.timeout) {
+            clearTimeout(this.timeout);
+        }
+        this.timeout = setTimeout(() => {
+            this.timeout = undefined;
+            this.search(true);
+        }, 500);
+    }
+
+    protected async search(reset: boolean) {
+        this.isSearching = true;
+        await this.guard.run(async () => {
+            if(!reset && !this.canLoadMore) return;
+            if(reset) {
+                this.page = 0;
+            }
+            const txt = this.searchTxt;
+            if(txt == "") {
+                if(!this.templatesRandom) {
+                    this.templatesRandom = await Process.execute(new TemplateRandomController().request({ number: 4 }));
+                }
+                this.templates = this.templatesRandom ?? [];
+            }
+            else {
+                this.loading = true;
+                const result = await Process.execute(new TemplateSearchController().request({ txt, limit: this.elementsByPage, offset: this.page * this.elementsByPage }));
+                if(result) {
+                    if(this.page == 0) {
+                        this.templates = result;
+                    }
+                    else {
+                        this.templates = [...this.templates, ...result];
+                    }
+                    this.canLoadMore = result.length >= this.elementsByPage;
+                }
+                this.loading = false;
+            }
+            this.searchResult = txt;
+        });
+        this.isSearching = false;
+    }
+    @BindThis()
+    protected needMoreLoad(x: number, y: number) {
+        if(this.isSearching) return;
+        if(this.canLoadMore && Main.instance.scrollEl.yMax - y < 200) {
+            this.page++;
+            this.search(false);
+        }
+    }
+    /**
+   * @inheritdoc
+   */
+    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+        return {};
+    }
+
+    public override show(state?: Aventus.State) {
+        super.show(state);
+        if(state instanceof TemplatesPageState) {
+            this.searchTxt = state.search;
+            this.search(true);
+        }
+    }
+
+    public override onShow(): void {
+        Main.instance.onScrollChange.add(this.needMoreLoad);
+    }
+
+    public override onHide(): void {
+        Main.instance.onScrollChange.remove(this.needMoreLoad);
+    }
+
+    protected override postCreation(): void {
+        super.postCreation();
+        this.search(true);
+    }
+    //#endregion
+
+}

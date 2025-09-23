@@ -1,0 +1,14 @@
+import { User } from '../../../Models/User.lib.avt';
+
+namespace App.Http.Resources.Web {
+
+	/**
+	 * Summary of UserResource
+	 */
+	@Convertible()
+	export class IndexResource {
+		public static get Fullname(): string { return "App.Http.Resources.Web.IndexResource"; }
+		public user?: User = undefined;
+	}
+
+}

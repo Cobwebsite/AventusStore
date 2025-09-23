@@ -1,0 +1,16 @@
+namespace App.Http.Controllers.Package {
+
+	@Convertible()
+	export class PackageSimpleResource {
+		public static get Fullname(): string { return "App.Http.Controllers.Package.PackageSimpleResource"; }
+		public tags!: string[];
+		public name!: string;
+		public description!: string;
+		public version!: string;
+		public downloads!: number;
+		public fromName!: string;
+		public fromImg?: string = undefined;
+		public isUser!: string;
+	}
+
+}

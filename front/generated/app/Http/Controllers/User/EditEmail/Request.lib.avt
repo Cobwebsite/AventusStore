@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.User.EditEmail {
+
+	export class Request {
+		public email!: string;
+	}
+
+}

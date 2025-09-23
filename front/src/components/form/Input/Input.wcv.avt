@@ -1,0 +1,9 @@
+<label for="{{ this.id }}" class="form-label">{{ this.label }}</label>
+<div class="form-field">
+    <input id="{{ this.id }}" name="{{ this.id }}" type="{{ this.type }}" placeholder="{{ this.placeholder }}" @input="changeValue" @element="inputEl"/>
+</div>
+<div class="errors">
+    for(let error of this.errors) {
+        <div class="error">{{ error }}</div>
+    }
+</div>

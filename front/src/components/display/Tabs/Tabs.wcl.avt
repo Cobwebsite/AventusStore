@@ -1,0 +1,36 @@
+import type { Tab } from "../Tab/Tab.wcl.avt";
+import { TabHeader } from "../TabHeader/TabHeader.wcl.avt";
+
+export class Tabs extends Aventus.Layout.Tabs.Tabs<Tab, TabHeader> implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    /**
+     * @inheritdoc
+     */
+    protected override defineTabHeader(): new (...args: any[]) => TabHeader {
+        return TabHeader;
+    }
+
+    //#endregion
+
+}

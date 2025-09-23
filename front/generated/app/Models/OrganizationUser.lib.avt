@@ -1,0 +1,19 @@
+import { User } from './User.lib.avt';
+import { Organization } from './Organization.lib.avt';
+import { Role } from './Role.lib.avt';
+
+namespace App.Models {
+
+	@Convertible()
+	export class OrganizationUser extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.OrganizationUser"; }
+		public id!: number;
+		public user_id!: number;
+		public user!: User;
+		public organization_id!: number;
+		public organization!: Organization;
+		public role_id!: number;
+		public role!: Role;
+	}
+
+}

@@ -1,0 +1,130 @@
+:host {
+	margin: 0 auto;
+	max-width: 80rem;
+	padding: 3rem 2rem;
+
+	.profile-header {
+		align-items: center;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		text-align: center;
+
+		.avatar {
+			border: 2px solid var(--border);
+			border-radius: 9999px;
+			height: 8rem;
+			overflow: hidden;
+			position: relative;
+			transition: border 0.2s ease-in-out;
+			width: 8rem;
+
+			.img {
+				border: 2px solid var(--border);
+				border-radius: 9999px;
+				font-size: 32px;
+			}
+		}
+
+		.username {
+			color: var(--text-white);
+			font-size: 2.25rem;
+			font-weight: bold;
+			margin: 0;
+		}
+
+		.bio {
+			align-items: center;
+			color: var(--text-muted);
+			display: flex;
+			font-size: 1.125rem;
+			gap: 1rem;
+			margin-top: 0.5rem;
+		}
+
+		.join-date {
+			color: #64748b;
+			font-size: 0.875rem;
+			margin-top: 0.5rem;
+		}
+	}
+
+	.cards-grid {
+		display: grid;
+		gap: 2rem;
+		grid-template-columns: 1fr;
+		margin-top: 2rem;
+	}
+
+	.list {
+		background-color: var(--card-bg);
+		border: 1px solid var(--card-border);
+		border-radius: .5rem;
+		display: flex;
+		flex-direction: column;
+		margin-top: 2rem;
+		overflow: hidden;
+		width: 100%;
+
+		.item {
+			align-items: center;
+			border-top: 1px solid var(--card-border);
+			display: flex;
+			gap: 16px;
+			height: 50px;
+			padding: 0 1rem;
+
+			.name {}
+
+			.role {
+				color: var(--card-border-hover);
+			}
+		}
+
+		.item:hover {
+			background-color: var(--card-bg-hover);
+		}
+
+		av-link:first-child {
+			.item {
+				border-top: none;
+			}
+		}
+	}
+
+	.empty-message {
+		color: var(--text-muted);
+		grid-column: span 2;
+		padding: 4rem 0;
+		text-align: center;
+	}
+
+	.settings-card {
+		width: calc(100% - 32px);
+		max-width: none;
+
+		.settings-card-content {
+			display: flex;
+			flex-direction: column;
+			gap: 1.5rem;
+		}
+	}
+}
+
+
+@media (min-width: 640px) {
+	:host {
+		.profile-header {
+			flex-direction: row;
+			text-align: left;
+		}
+	}
+}
+
+@media (min-width: 768px) {
+	:host {
+		.cards-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+}

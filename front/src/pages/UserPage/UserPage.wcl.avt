@@ -1,0 +1,60 @@
+import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Uri } from "Aventus@Main:Aventus.package.avt";
+import { Main } from "../../Main/Main.wcl.avt";
+import { UserDetailsController } from "../../../generated/app/Http/Controllers/User/Details/Controller.lib.avt";
+import type { UserDetailsResource } from "../../../generated/app/Http/Controllers/User/UserDetailsResource.lib.avt";
+import { Process } from "Aventus@UI:Aventus.package.avt";
+import { DateTools } from "../../libs/DateTools.lib.avt";
+
+export class UserPage extends Page implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    public activeTab?: string;
+
+    @Watch()
+    public user!: UserDetailsResource;
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    public override async isAllowed(state: Aventus.State, pattern: string, router: Aventus.Navigation.Router): Promise<boolean | Aventus.State | string> {
+        let slugs = Uri.getParams(pattern, state.name);
+        if(slugs && slugs['id']) {
+            if(slugs['id'] == Main.user?.username) {
+                return "/profile";
+            }
+
+            const result = await Process.execute(new UserDetailsController().request(slugs['id']));
+            if(result) {
+                this.user = result;
+                return true;
+            }
+        }
+        return '/not_found';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+        return {};
+    }
+    //#endregion
+
+}

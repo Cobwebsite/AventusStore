@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Package.Search {
+
+	export enum ErrorEnum {
+
+	}
+
+}

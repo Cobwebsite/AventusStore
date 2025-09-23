@@ -1,0 +1,60 @@
+import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import type { OrgDetailsResource } from "../../../generated/app/Http/Controllers/Org/OrgDetailsResource.lib.avt";
+import { Uri } from "Aventus@Main:Aventus.package.avt";
+import { OrgDetailsController } from "../../../generated/app/Http/Controllers/Org/Details/Controller.lib.avt";
+import { OrgRoleController } from "../../../generated/app/Http/Controllers/Org/Role/Controller.lib.avt";
+import { RoleEnum } from "../../../generated/app/Enums/RoleEnum.lib.avt";
+import { Process } from "Aventus@UI:Aventus.package.avt";
+
+export class OrganizationPage extends Page implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    public activeTab?: string;
+
+    @Watch()
+    public org!: OrgDetailsResource;
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    public override async isAllowed(state: Aventus.State, pattern: string, router: Aventus.Navigation.Router): Promise<boolean | Aventus.State | string> {
+        let slugs = Uri.getParams(pattern, state.name);
+        if(slugs && slugs['id']) {
+            const roleResult = await Process.execute(new OrgRoleController().request(slugs['id']));
+            if(roleResult?.role == RoleEnum.Admin) {
+                return '/org/Cobwebsite/admin';
+            }
+            const result = await Process.execute(new OrgDetailsController().request(slugs['id']));
+            if(result) {
+                this.org = result;
+                return true;
+            }
+        }
+        return '/not_found';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+        return {};
+    }
+    //#endregion
+
+}

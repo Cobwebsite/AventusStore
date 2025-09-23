@@ -1,0 +1,84 @@
+import { Page, PageFormRoute } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Main } from "../../../Main/Main.wcl.avt";
+import { Required } from "Aventus@UI:Aventus.Form.Validators.package.avt";
+import { Toast } from "../../../components/interaction/Toast/Toast.wcl.avt";
+import { AuthSignupController } from "../../../../generated/app/Http/Controllers/Auth/Signup/Controller.lib.avt";
+import { Request } from "../../../../generated/app/Http/Controllers/Auth/Signup/Request.lib.avt";
+
+
+export class SignupPage extends PageFormRoute<typeof AuthSignupController> implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    /**
+     * @inheritdoc
+     */
+    protected override formSchema(): Aventus.Form.FormSchema<Request> {
+        return {
+            email: Required,
+            password: Required,
+            username: Required
+        };
+    }
+    /**
+     * @inheritdoc
+     */
+    public override route(): typeof AuthSignupController {
+        return AuthSignupController;
+    }
+    /**
+     * @inheritdoc
+     */
+    public override onResult(result: Aventus.ResultWithError<boolean, Aventus.GenericError<any>> | null): Aventus.Asyncable<void> {
+        if(result?.result) {
+            this.form.item = {
+                email: "",
+                password: "",
+                username: ""
+            };
+            Toast.add({
+                type: "success",
+                title: "Account created",
+                message: "Check your mail to validate your account"
+            });
+            this.router?.navigate("/login");
+        }
+    }
+    /**
+     * @inheritdoc
+     */
+    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+        return {};
+    }
+    /**
+     * @inheritdoc
+     */
+    public override isAllowed(state: Aventus.State): Aventus.Asyncable<boolean | Aventus.State | string> {
+        if(Main.user) {
+            return "/";
+        }
+        return true;
+    }
+
+    //#endregion
+
+}

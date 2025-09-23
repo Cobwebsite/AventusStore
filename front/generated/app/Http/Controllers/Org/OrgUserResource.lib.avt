@@ -1,0 +1,16 @@
+import { PackageSimpleResource } from '../Package/PackageSimpleResource.lib.avt';
+import { OrganizationPicture } from '../../../Models/OrganizationPicture.lib.avt';
+
+namespace App.Http.Controllers.Org {
+
+	@Convertible()
+	export class OrgUserResource {
+		public static get Fullname(): string { return "App.Http.Controllers.Org.OrgUserResource"; }
+		public packages!: PackageSimpleResource[];
+		public name!: string;
+		public role!: string;
+		public bio?: string = undefined;
+		public picture?: OrganizationPicture = undefined;
+	}
+
+}

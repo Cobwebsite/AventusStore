@@ -1,0 +1,39 @@
+<div class="login-header">
+    <h2 class="login-title">Sign in to your account</h2>
+    <p class="login-subtext">
+        <span>Or&nbsp;</span>
+        <av-router-link state="/signup" class="link-accent">
+            create a new account
+        </av-router-link>
+    </p>
+</div>
+
+<div class="login-form-wrapper">
+    <div class="login-form-card">
+        <div class="login-form">
+            <as-input label="Username" :form="this.form.parts.username" id="username" type="text"
+                autoComplete="username" @focus="clearError"></as-input>
+
+            <as-input label="Password" :form="this.form.parts.password" id="password" type="password"
+                autoComplete="current-password" @focus="clearError"></as-input>
+
+            if(this.error) {
+                <div class="form-error">
+                    <div class="error">{{ this.error }}</div>
+                </div>
+            }
+
+            <div class="form-footer">
+                <av-router-link state="/forgot-password" class="link-accent">
+                    Forgot your password?
+                </av-router-link>
+            </div>
+
+            <div>
+                <as-button type="submit" class="btn-full" :loading="this.isLoading">
+                    Sign in
+                </as-button>
+            </div>
+        </div>
+    </div>
+</div>

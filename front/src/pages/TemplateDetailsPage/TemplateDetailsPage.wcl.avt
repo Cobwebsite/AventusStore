@@ -1,0 +1,93 @@
+import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Converter } from 'showdown';
+import { TemplateDetailsController } from "../../../generated/app/Http/Controllers/Template/Details/Controller.lib.avt";
+import type { TemplateDetailsResource } from "../../../generated/app/Http/Controllers/Template/TemplateDetailsResource.lib.avt";
+import { Uri } from "Aventus@Main:Aventus.package.avt";
+import { Toast } from "../../components/interaction/Toast/Toast.wcl.avt";
+import { Process } from "Aventus@UI:Aventus.package.avt";
+
+export class TemplateDetailsPage extends Page implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+    @Attribute()
+    public show_download!: boolean;
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    public template!: TemplateDetailsResource;
+
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    /**
+     * @inheritdoc
+     */
+    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+        return {};
+    }
+
+    public override async isAllowed(state: Aventus.State, pattern: string, router: Aventus.Navigation.Router): Promise<boolean | Aventus.State | string> {
+        let slugs = Uri.getParams(pattern, state.name);
+        if(slugs && slugs['id']) {
+            let data = await Process.execute(new TemplateDetailsController().request(slugs['id']));
+            if(data) {
+                this.template = data;
+                return true;
+            }
+        }
+        return '/not_found';
+    }
+
+    public getReadMe() {
+        if(!this.template) return "";
+        let converter = new Converter({});
+        return converter.makeHtml(this.template.readme);
+    }
+
+    public getDownloadUri() {
+        return location.protocol + "//" + location.host + "/template/download/" + this.template.name + "/" + this.template.version;
+    }
+
+    /**
+     * 
+     */
+    protected async copyLigne() {
+        await navigator.clipboard.writeText(this.getDownloadUri());
+        await Toast.add({
+            type: "success",
+            title: "Copied"
+        });
+    }
+
+
+    /**
+     * 
+     */
+    protected showDownload() {
+        this.show_download = true;
+    }
+
+    public override onShow(): void {
+        super.onShow();
+        this.show_download = false;
+    }
+
+    protected override postCreation(): void {
+        super.postCreation();
+    }
+    //#endregion
+
+}

@@ -1,0 +1,27 @@
+import { User } from './User.lib.avt';
+import { Organization } from './Organization.lib.avt';
+import { PackageTag } from './PackageTag.lib.avt';
+
+namespace App.Models {
+
+	/**
+	 * The package that user can download
+	 */
+	@Convertible()
+	export class Package extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.Package"; }
+		public id!: number;
+		public name!: string;
+		public description!: string;
+		public readme!: string;
+		public version!: string;
+		public downloads!: number;
+		public user_id?: number = undefined;
+		public user?: User = undefined;
+		public organization_id?: number = undefined;
+		public organization?: Organization = undefined;
+		public release_date!: Date;
+		public tags!: PackageTag[];
+	}
+
+}

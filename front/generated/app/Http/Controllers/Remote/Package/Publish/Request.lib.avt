@@ -1,0 +1,16 @@
+namespace App.Http.Controllers.Remote.Package.Publish {
+
+	/**
+	 * Summary of UserStoreRequest
+	 */
+	export class Request {
+		public tags!: string[];
+		public name!: string;
+		public description?: string = undefined;
+		public version!: string;
+		public organization?: string = undefined;
+		public packageFile!: File;
+		public readMe?: File = undefined;
+	}
+
+}

@@ -1,0 +1,47 @@
+import type { AventusImage } from "Aventus@Php:AventusPhp.package.avt";
+import type { UserPicture } from "../../../../generated/app/Models/UserPicture.lib.avt";
+
+export class UserImg extends Aventus.WebComponent implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    @ViewElement()
+    protected lettersEl!: HTMLDivElement;
+
+    @Signal((target: UserImg) => {
+        target.init();
+    })
+    @Injectable()
+    public user!: { username?: string, name?: string, picture?: AventusImage; };
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    protected init() {
+        if(this.user?.picture?.uri) {
+            this.style.backgroundImage = "url('" + this.user?.picture?.uri + "')";
+            this.lettersEl.innerHTML = "";
+        }
+        else {
+            this.style.backgroundImage = "";
+            const name = this.user.username ?? this.user.name ?? '';
+            this.lettersEl.innerHTML = name.slice(0, 2);
+        }
+    }
+    //#endregion
+
+}

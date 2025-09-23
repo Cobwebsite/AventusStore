@@ -1,0 +1,101 @@
+:host {
+	flex-direction: column;
+	justify-content: center;
+	padding: 3rem 1rem;
+
+	.login-header {
+		margin: 0 auto;
+		max-width: 28rem;
+		text-align: center;
+		width: 100%;
+	}
+
+	.login-title {
+		color: var(--text-color);
+		font-size: 1.875rem;
+		font-weight: 700;
+		margin-top: 1.5rem;
+	}
+
+	.login-subtext {
+		color: var(--text-muted);
+		font-size: 0.875rem;
+		margin-top: 0.5rem;
+	}
+
+	.link-accent {
+		color: var(--color-accent);
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	.link-accent:hover {
+		color: var(--hover-accent);
+	}
+
+	.login-form-wrapper {
+		margin-left: auto;
+		margin-right: auto;
+		margin-top: 2rem;
+		max-width: 28rem;
+		width: 100%;
+	}
+
+	.login-form-card {
+		background-color: var(--card-bg);
+		border: 1px solid var(--card-border);
+		border-radius: 0.5rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+		padding: 2rem 1rem;
+	}
+
+	.login-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.form-group {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.form-label {
+		color: var(--text-muted);
+		font-size: 0.875rem;
+		font-weight: 500;
+		margin-bottom: 0.25rem;
+	}
+
+	.form-field {
+		margin-top: 0.25rem;
+	}
+
+	.form-error {
+		font-size: 0.875rem;
+		color: var(--color-danger);
+	}
+
+	.form-footer {
+		display: flex;
+		font-size: 0.875rem;
+		justify-content: flex-end;
+	}
+
+	.btn-full {
+		width: 100%;
+	}
+
+}
+
+:host([visible]) {
+	display: flex;
+}
+
+@media (min-width: 640px) {
+	:host {
+		.login-form-card {
+			padding: 2rem 2.5rem;
+		}
+	}
+}

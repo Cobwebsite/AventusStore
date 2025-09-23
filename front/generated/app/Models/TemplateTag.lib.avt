@@ -1,0 +1,15 @@
+import { Tag } from './Tag.lib.avt';
+import { Template } from './Template.lib.avt';
+
+namespace App.Models {
+
+	@Convertible()
+	export class TemplateTag extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.TemplateTag"; }
+		public template_id!: number;
+		public tag_id!: number;
+		public tag!: Tag;
+		public template!: Template;
+	}
+
+}

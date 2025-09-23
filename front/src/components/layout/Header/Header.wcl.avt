@@ -1,0 +1,80 @@
+import { AuthLogoutController } from "../../../../generated/app/Http/Controllers/Auth/Logout/Controller.lib.avt";
+import type { User } from "../../../../generated/app/Models/User.lib.avt";
+import { Main } from "../../../Main/Main.wcl.avt";
+
+export class Header extends Aventus.WebComponent implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+    @Attribute()
+    public is_menu_open!: boolean;
+    @Attribute()
+    public open_menu_mobile!: boolean;
+    @Attribute()
+    public is_ready!: boolean;
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    public user?: User;
+    @ViewElement()
+    protected menuEl!: HTMLDivElement;
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+
+
+    /**
+     * 
+     */
+    protected openMobileNav() {
+        this.open_menu_mobile = true;
+    }
+
+    /**
+     * 
+     */
+    protected closeMobileNav() {
+        this.open_menu_mobile = false;
+    }
+    /**
+   * 
+   */
+    protected openMenu() {
+        this.is_menu_open = true;
+        if(this.is_menu_open) {
+            setTimeout(() => {
+                this.menuEl.focus();
+            }, 200);
+        }
+    }
+    protected closeMenu() {
+        this.is_menu_open = false;
+
+    }
+    protected async logout() {
+        await new AuthLogoutController().request();
+        window.location.reload();
+    }
+    protected override postCreation(): void {
+        this.user = Main.user;
+        this.is_ready = true;
+
+        Main.instance.onRouteChange.add(() => {
+            this.open_menu_mobile = false;
+        })
+    }
+    //#endregion
+
+}

@@ -1,0 +1,42 @@
+<header class="template-header">
+    <h1 class="template-title">{{ this.template.name }}</h1>
+    <p class="template-description">{{ this.template.description }}</p>
+    <div class="template-tags">
+        for(let tag of this.template.tags) { 
+            <span class="template-tag">{{ tag }}</span>
+        }
+    </div>
+    <div class="template-meta">
+
+        <av-router-link
+            state="{{ this.template.isUser ? '/user/' + this.template.fromName : '/org/' + this.template.fromName }}"
+            class="author-link">
+            <as-user-img :user="{username:this.template.fromName, picture: {'uri':this.template.fromImg}}"
+                class="author-avatar"></as-user-img>
+            <span class="author-name">{{ this.template.fromName }}</span>
+        </av-router-link>
+        <div class="template-version">{{ this.template.version }}</div>
+        <div class="template-downloads">
+            <mi-icon icon="download" class="icon-sm"></mi-icon>
+            <span>{{ this.template.downloads }} downloads</span>
+        </div>
+    </div>
+    <div class="template-download-button">
+        <a href="vscode://cobwebsite.aventus/template/download?url={{ this.getDownloadUri() }}">
+            <as-button>
+                <mi-icon icon="download" class="icon-sm mr-2"></mi-icon>
+                <span>Download</span>
+            </as-button>
+        </a>
+        <div class="download-ligne">
+            <!-- <div>{</div> -->
+            <div class="ligne">{{ this.getDownloadUri() }}</div>
+            <!-- <div>}</div> -->
+            <div class="copy" @press="copyLigne">
+                <mi-icon icon="content_copy"></mi-icon>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="template-readme">{{ this.getReadMe() }}</div>

@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.User.EditPicture {
+
+	export class Request {
+		public file!: File;
+	}
+
+}

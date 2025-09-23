@@ -1,0 +1,35 @@
+{
+	"module": "AventusStore",
+	"componentPrefix": "as",
+	"hideWarnings": true,
+	"build": [
+		{
+			"name": "Main",
+			"src": [
+				"./src/*",
+				"./generated/*"
+			],
+			"compile": [
+				{
+					"output": "../public/js/store.js",
+					"package": "../public/js/temp.package.avt"
+				}
+			],
+			"dependances": {
+				"Aventus@Main":{},
+				"Aventus@UI": {},
+				"Aventus@Php": {},
+				"MaterialIcon@Main": {
+					"isLocal": true
+				}
+			}
+		}
+	],
+	"static": [
+		{
+			"name": "Main",
+			"input": "./static",
+			"output": "../public"
+		}
+	]
+}

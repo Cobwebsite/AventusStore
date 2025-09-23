@@ -1,0 +1,11 @@
+namespace App.Http.Controllers.Auth.Logout {
+
+	export class AuthLogoutController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(): Promise<Aventus.ResultWithError<boolean>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/logout`, Aventus.HttpMethod.POST);
+			return await request.queryJSON<boolean>(this.router);
+		}
+	}
+
+}

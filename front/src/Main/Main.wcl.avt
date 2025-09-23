@@ -1,0 +1,166 @@
+import { Required } from "Aventus@UI:Aventus.Form.Validators.package.avt";
+import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage/ForgotPasswordPage.wcl.avt";
+import { HomePage } from "../pages/HomePage/HomePage.wcl.avt";
+import { LoginPage } from "../pages/auth/LoginPage/LoginPage.wcl.avt";
+import { PackageDetailsPage } from "../pages/PackageDetailsPage/PackageDetailsPage.wcl.avt";
+import { PackagesPage } from "../pages/PackagesPage/PackagesPage.wcl.avt";
+import { SignupPage } from "../pages/auth/SignupPage/SignupPage.wcl.avt";
+import { UserProfilePage } from "../pages/UserProfilePage/UserProfilePage.wcl.avt";
+import { ToastManager } from "Aventus@UI:Aventus.Toast.package.avt";
+import { Form } from "Aventus@UI:Aventus.Form.package.avt";
+import { Callback, HttpRequest, Json, VoidWithError } from "Aventus@Main:Aventus.package.avt";
+import type { IndexResource } from "../../generated/app/Http/Resources/Web/IndexResource.lib.avt";
+import type { User } from "../../generated/app/Models/User.lib.avt";
+import { ValidationResultPage } from "../pages/auth/ValidationResultPage/ValidationResultPage.wcl.avt";
+import { Toast } from "../components/interaction/Toast/Toast.wcl.avt";
+import { Modal } from "../components/interaction/Modal/Modal.wcl.avt";
+import { Alert } from "../components/interaction/Alert/Alert.wcl.avt";
+import { OrganizationPage } from "../pages/OrganizationPage/OrganizationPage.wcl.avt";
+import { UserPage } from "../pages/UserPage/UserPage.wcl.avt";
+import { OrganizationAdminPage } from "../pages/OrganizationAdminPage/OrganizationAdminPage.wcl.avt";
+import { TemplatesPage } from "../pages/TemplatesPage/TemplatesPage.wcl.avt";
+import { TemplateDetailsPage } from "../pages/TemplateDetailsPage/TemplateDetailsPage.wcl.avt";
+import { Process } from "Aventus@UI:Aventus.package.avt";
+
+@OverrideView()
+export class Main extends Aventus.Navigation.Router implements Aventus.DefaultComponent {
+
+    //#region static
+    public static instance: Main;
+    public static get user(): User | undefined {
+        return this.instance.indexResource.user;
+    };
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    private indexResource: IndexResource;
+    private bearer: string | null;
+
+    @ViewElement()
+    public scrollEl!: Aventus.Layout.Scrollable;
+    //#endregion
+
+
+    //#region constructor
+    public constructor() {
+        super();
+        Main.instance = this;
+        this.indexResource = window['indexResource'] as IndexResource;
+        this.bearer = localStorage.getItem("token");
+    }
+    //#endregion
+
+    //#region events
+    public onScrollChange: Callback<(x: number, y: number) => void> = new Callback();
+    public onRouteChange: Callback<() => void> = new Callback();
+    //#endregion
+
+    //#region methods
+    protected addScroll() {
+        this.scrollEl.onScrollChange.add((x, y) => {
+            this.onScrollChange.trigger(x, y);
+        });
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    protected override defineRoutes(): void {
+        this.addRoute('/', HomePage);
+        this.addRoute('/packages', PackagesPage);
+        this.addRoute('/packages/{id:string}', PackageDetailsPage);
+        this.addRoute('/templates', TemplatesPage);
+        this.addRoute('/templates/{id:string}', TemplateDetailsPage);
+        this.addRoute('/user/{id:string}', UserPage);
+        this.addRoute('/profile', UserProfilePage);
+        this.addRoute('/org/{id:string}', OrganizationPage);
+        this.addRoute('/org/{id:string}/admin', OrganizationAdminPage);
+
+        //#region auth
+        this.addRoute('/login', LoginPage);
+        this.addRoute('/signup', SignupPage);
+        this.addRoute('/forgot-password', ForgotPasswordPage);
+        this.addRoute('/validation/success', ValidationResultPage);
+        this.addRoute('/validation/failure', ValidationResultPage);
+        //#endregion
+    }
+
+    protected override postCreation(): void {
+        super.postCreation();
+        this.addScroll();
+        ToastManager.configure({
+            defaultDelay: 5000,
+            defaultPosition: "top right",
+            defaultToast: Toast,
+            heightLimitPercent: 100
+        });
+        Modal.configure({
+            closeWithClick: false,
+            closeWithEsc: false,
+            rejectValue: null
+        });
+        Form.configure({
+            handleExecuteNoInputError: (errors) => {
+                if(errors.length > 0) {
+                    let msg = errors.map(p => p.message.replace(/\n/g, '<br/>')).join("<br/>");
+                    Alert.open({
+                        title: "Execution error",
+                        content: msg,
+                    });
+                }
+            },
+            handleValidateNoInputError: (errors) => {
+                const li: string[] = [];
+                for(let key in errors) {
+                    if(errors[key]) {
+                        for(let msg of errors[key]) {
+                            li.push(`<li>${key} : ${msg}</li>`);
+                        }
+                    }
+                }
+                Alert.open({
+                    title: "Form validation error",
+                    content: `<p>The form can't be validated because of :</p><ul>${li.join("")}</ul>`
+                });
+            }
+        });
+        HttpRequest.configure({
+            beforeSend: (request) => {
+                const result = new VoidWithError();
+                request.setCredentials("include");
+                if(this.indexResource.user) {
+                    request.setHeader("Authorization", "Bearer " + this.bearer);
+                }
+                return result;
+            },
+            responseMiddleware: (response, request) => {
+                if(response.containsCode(401)) {
+                    location.reload();
+                }
+                return response;
+            }
+        });
+        Process.configure({
+            handleErrors: (msg) => {
+                Alert.open({
+                    title: "Execution error",
+                    content: msg,
+                });
+            }
+        });
+        Required.msg = "Thie field {name} is required";
+
+        this.stateManager.onAfterStateChanged(() => {
+            this.onRouteChange.trigger();
+        })
+    }
+    //#endregion
+
+}

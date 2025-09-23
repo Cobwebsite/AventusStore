@@ -1,0 +1,67 @@
+<div class="homepage">
+    <section class="hero">
+        <div class="hero-background"></div>
+        <div class="container">
+            <h1 class="hero-title">
+                The Webcomponent <span class="highlight">JavaScript</span> Framework
+            </h1>
+            <p class="hero-subtitle">
+                AventusJs provides the building blocks to create powerful, fast, and scalable web applications with an
+                amazing developer experience.
+            </p>
+            <div class="hero-buttons">
+                <av-router-link state="/packages">
+                    <as-button variant="primary" class="btn-lg">
+                        Search Packages
+                    </as-button>
+                </av-router-link>
+                <av-router-link state="/templates">
+                    <as-button variant="secondary" class="btn-lg">
+                        Explore Templates
+                    </as-button>
+                </av-router-link>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="text-center">
+            <h2 class="section-title">Featured Packages</h2>
+            <p class="section-description">Discover powerful packages to supercharge your project.</p>
+        </div>
+        <div class="card-grid">
+            for(let p of this.packages) {
+                <as-package-card :package="p"></as-package-card>
+            }
+        </div>
+        <div class="section-footer">
+            <av-router-link to="/packages">
+                <as-button variant="ghost">
+                    <span>View All Packages</span>
+                    <mi-icon icon="chevron_right" class="icon-right"></mi-icon>
+                </as-button>
+            </av-router-link>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="text-center">
+            <h2 class="section-title">Featured Templates</h2>
+            <p class="section-description">Start your next project with a solid foundation.</p>
+        </div>
+        <div class="card-grid">
+            for(let t of this.templates) {
+                <as-template-card :template="t"></as-template-card>
+            }
+        </div>
+        <div class="section-footer">
+            <av-router-link to="/templates">
+                <as-button variant="ghost">
+                    <span>View All Templates</span>
+                    <mi-icon icon="chevron_right" class="icon-right"></mi-icon>
+                </as-button>
+            </av-router-link>
+        </div>
+    </section>
+</div>
+<!-- <as-modal></as-modal> -->

@@ -1,0 +1,14 @@
+namespace App.Http.Controllers.Remote.Template.Publish {
+
+	export class Request {
+		public tags!: string[];
+		public name!: string;
+		public description?: string = undefined;
+		public version!: string;
+		public is_project!: boolean;
+		public organization?: string = undefined;
+		public templateFile!: File;
+		public readMe?: File = undefined;
+	}
+
+}

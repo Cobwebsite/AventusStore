@@ -1,0 +1,15 @@
+import { Template } from './Template.lib.avt';
+
+namespace App.Models {
+
+	@Convertible()
+	export class TemplateDownload extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.TemplateDownload"; }
+		public template_id!: number;
+		public version!: string;
+		public date!: Date;
+		public downloads!: number;
+		public template!: Template;
+	}
+
+}

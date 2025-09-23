@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Template.Search {
+
+	export enum ErrorEnum {
+
+	}
+
+}

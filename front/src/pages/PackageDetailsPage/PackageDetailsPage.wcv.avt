@@ -1,0 +1,39 @@
+<header class="package-header">
+    <h1 class="package-title">{{ this.package.name }}</h1>
+    <p class="package-description">{{ this.package.description }}</p>
+    <div class="package-tags">
+        for(let tag of this.package.tags) { 
+            <span class="package-tag">{{ tag }}</span>
+        }
+    </div>
+    <div class="package-meta">
+
+        <av-router-link
+            state="{{ this.package.isUser ? '/user/' + this.package.fromName : '/org/' + this.package.fromName }}"
+            class="author-link">
+            <as-user-img :user="{username:this.package.fromName, picture: {'uri':this.package.fromImg}}" class="author-avatar"></as-user-img>
+            <span class="author-name">{{ this.package.fromName }}</span>
+        </av-router-link>
+        <div class="package-version">{{ this.package.version }}</div>
+        <div class="package-downloads">
+            <mi-icon icon="download" class="icon-sm"></mi-icon>
+            <span>{{ this.package.downloads }} downloads</span>
+        </div>
+    </div>
+    <div class="package-download-button">
+        <as-button @press="showDownload">
+            <mi-icon icon="download" class="icon-sm mr-2"></mi-icon>
+            <span>Download</span>
+        </as-button>
+        <div class="download-ligne">
+            <!-- <div>{</div> -->
+            <div class="ligne">{{this.getDownloadUri()}}</div>
+            <!-- <div>}</div> -->
+             <div class="copy" @press="copyLigne">
+                <mi-icon icon="content_copy"></mi-icon>
+             </div>
+        </div>
+    </div>
+</header>
+
+<div class="package-readme">{{ this.getReadMe() }}</div>

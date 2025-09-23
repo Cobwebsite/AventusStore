@@ -1,0 +1,21 @@
+import { PackageSimpleResource } from '../Package/PackageSimpleResource.lib.avt';
+import { TemplateSimpleResource } from '../Template/TemplateSimpleResource.lib.avt';
+import { OrgUserResource } from '../Org/OrgUserResource.lib.avt';
+import { UserPicture } from '../../../Models/UserPicture.lib.avt';
+
+namespace App.Http.Controllers.User {
+
+	@Convertible()
+	export class UserDetailsResource {
+		public static get Fullname(): string { return "App.Http.Controllers.User.UserDetailsResource"; }
+		public packages!: PackageSimpleResource[];
+		public templates!: TemplateSimpleResource[];
+		public organizations!: OrgUserResource[];
+		public username!: string;
+		public email!: string;
+		public bio?: string = undefined;
+		public picture?: UserPicture = undefined;
+		public created_date!: Date;
+	}
+
+}

@@ -1,0 +1,53 @@
+import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import type { PackageSimpleResource } from "../../../generated/app/Http/Controllers/Package/PackageSimpleResource.lib.avt";
+import { PackageRandomController } from "../../../generated/app/Http/Controllers/Package/Random/Controller.lib.avt";
+import type { TemplateSimpleResource } from "../../../generated/app/Http/Controllers/Template/TemplateSimpleResource.lib.avt";
+import { TemplateRandomController } from "../../../generated/app/Http/Controllers/Template/Random/Controller.lib.avt";
+import { Process } from "Aventus@UI:Aventus.package.avt";
+
+export class HomePage extends Page implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    public packages: PackageSimpleResource[] = [];
+
+    @Watch()
+    public templates: TemplateSimpleResource[] = [];
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    /**
+     * @inheritdoc
+     */
+    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+        return {};
+    }
+
+    protected async loadData() {
+        this.packages = await Process.execute(new PackageRandomController().request({ number: 4 })) ?? [];
+        this.templates = await Process.execute(new TemplateRandomController().request({ number: 4 })) ?? [];
+    }
+
+    protected override postCreation(): void {
+        super.postCreation();
+        this.loadData();
+    }
+    //#endregion
+
+}

@@ -1,0 +1,5 @@
+<as-input label="Description" @bind="this.value"></as-input>
+<div class="footer">
+    <as-button @press="reject" variant="secondary">Cancel</as-button>
+    <as-button @press="save">Save</as-button>
+</div>

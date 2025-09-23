@@ -1,0 +1,28 @@
+<div class="profile-header">
+    <div class="avatar">
+        <as-user-img :user="this.org" class="img"></as-user-img>
+    </div>
+    <div>
+        <h1 class="username">{{ this.org.name }}</h1>
+        <p class="bio">
+            <span>{{ this.org.bio }}</span>
+        </p>
+    </div>
+</div>
+
+<as-tabs>
+    <as-tab label="Packages" count="{{ this.org.packages.length }}">
+        <div class="cards-grid">
+            for(let p of this.org.packages) {
+                <as-package-card :package="p" no_owner></as-package-card>
+            }
+        </div>
+    </as-tab>
+    <as-tab label="Templates" count="{{ this.org.templates.length }}">
+        <div class="cards-grid">
+            for(let p of this.org.templates) {
+                <as-template-card :template="p" no_owner></as-template-card>
+            }
+        </div>
+    </as-tab>
+</as-tabs>

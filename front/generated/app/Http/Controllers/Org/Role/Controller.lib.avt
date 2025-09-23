@@ -1,0 +1,13 @@
+import { Response } from './Response.lib.avt';
+
+namespace App.Http.Controllers.Org.Role {
+
+	export class OrgRoleController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(name: string | number): Promise<Aventus.ResultWithError<Response>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/orgs/role/${name}`, Aventus.HttpMethod.GET);
+			return await request.queryJSON<Response>(this.router);
+		}
+	}
+
+}

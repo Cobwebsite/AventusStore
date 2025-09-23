@@ -1,0 +1,14 @@
+namespace App.Http.Controllers.Package.Search {
+
+	@Convertible()
+	export class Response {
+		public static get Fullname(): string { return "App.Http.Controllers.Package.Search.Response"; }
+		private name!: string;
+		private description!: string;
+		private version!: string;
+		private downloads!: number;
+		private fromName!: string;
+		private isUser!: string;
+	}
+
+}

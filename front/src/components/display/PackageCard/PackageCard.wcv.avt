@@ -1,0 +1,26 @@
+<av-router-link state="{{ '/packages/' + this.package.name }}" class="package-card-link">
+    <div class="package-card">
+        <div>
+            <h3 class="package-name">{{ this.package.name }}</h3>
+            <p class="package-description">{{ this.package.description }}</p>
+        </div>
+        <div class="package-footer">
+            <div class="package-tags">
+                for(let tag of this.package.tags) { 
+                    <span class="package-tag" @press="searchTag">{{ tag }}</span>
+                }
+            </div>
+            <div class="package-meta">
+                <av-router-link state="{{this.getFromState()}}" class="package-author">
+                    <as-user-img :user="{username:this.package.fromName, picture: {'uri':this.package.fromImg}}"
+                        class="author-avatar"></as-user-img>
+                    <span>{{ this.package.fromName }}</span>
+                </av-router-link>
+                <div class="package-downloads">
+                    <mi-icon icon="download" class="icon-xs"></mi-icon>
+                    <span>{{ this.package.downloads }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</av-router-link>

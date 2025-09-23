@@ -1,0 +1,11 @@
+namespace App.Http.Controllers.Remote.Auth.Logout {
+
+	export class Controller extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(): Promise<Aventus.ResultWithError<boolean>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/remote/logout`, Aventus.HttpMethod.POST);
+			return await request.queryJSON<boolean>(this.router);
+		}
+	}
+
+}

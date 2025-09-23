@@ -1,0 +1,15 @@
+namespace App.Models {
+
+	/**
+	 * The package that user can download
+	 */
+	@Convertible()
+	export class PackageVersion extends Aventus.Data implements Aventus.IData {
+		public static override get Fullname(): string { return "App.Models.PackageVersion"; }
+		public id!: number;
+		public package_id!: number;
+		public version!: string;
+		public date!: Date;
+	}
+
+}

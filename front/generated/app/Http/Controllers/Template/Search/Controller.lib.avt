@@ -1,0 +1,15 @@
+import { Request } from './Request.lib.avt';
+import { TemplateSimpleResource } from '../TemplateSimpleResource.lib.avt';
+
+namespace App.Http.Controllers.Template.Search {
+
+	export class TemplateSearchController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(body: Request): Promise<Aventus.ResultWithError<TemplateSimpleResource[]>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/template/search`, Aventus.HttpMethod.POST);
+			request.setBody(body);
+			return await request.queryJSON<TemplateSimpleResource[]>(this.router);
+		}
+	}
+
+}

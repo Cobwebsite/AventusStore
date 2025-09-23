@@ -1,0 +1,11 @@
+export class TemplatesPageState extends Aventus.State implements Aventus.IState {
+    public static get state(): string { return "/templates"; }
+    /**
+     * @inheritdoc
+     */
+    public override get name(): string {
+        return TemplatesPageState.state;
+    }
+
+    public search: string = "";
+}

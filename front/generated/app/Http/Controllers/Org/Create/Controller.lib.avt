@@ -1,0 +1,15 @@
+import { Request } from './Request.lib.avt';
+import { OrgUserResource } from '../OrgUserResource.lib.avt';
+
+namespace App.Http.Controllers.Org.Create {
+
+	export class OrgCreateController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(body: Request): Promise<Aventus.ResultWithError<OrgUserResource>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/org/create`, Aventus.HttpMethod.POST);
+			request.setBody(body);
+			return await request.queryJSON<OrgUserResource>(this.router);
+		}
+	}
+
+}

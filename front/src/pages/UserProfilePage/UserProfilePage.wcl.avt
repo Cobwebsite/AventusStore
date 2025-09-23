@@ -1,0 +1,137 @@
+import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Main } from "../../Main/Main.wcl.avt";
+import { UserCurrentController } from "../../../generated/app/Http/Controllers/User/Current/Controller.lib.avt";
+import type { UserDetailsResource } from "../../../generated/app/Http/Controllers/User/UserDetailsResource.lib.avt";
+import { DateTools } from "../../libs/DateTools.lib.avt";
+import { UserEditPictureController } from "../../../generated/app/Http/Controllers/User/EditPicture/Controller.lib.avt";
+import { ModalEditBio } from "./components/ModalEditBio/ModalEditBio.wcl.avt";
+import { UserEditBioController } from "../../../generated/app/Http/Controllers/User/EditBio/Controller.lib.avt";
+import { UserEditEmailController } from "../../../generated/app/Http/Controllers/User/EditEmail/Controller.lib.avt";
+import type { Input } from "../../components/form/Input/Input.wcl.avt";
+import { ModalCreateOrg } from "./components/ModalCreateOrg/ModalCreateOrg.wcl.avt";
+import { Process } from "Aventus@UI:Aventus.package.avt";
+
+export class UserProfilePage extends Page implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    @Watch()
+    public activeTab?: string;
+
+    @Watch((target: UserProfilePage) => {
+        target.email = target.user.email;
+    })
+    public user!: UserDetailsResource;
+
+    @Watch()
+    public email: string = "";
+
+    @ViewElement()
+    protected uploadPictrueEl!: HTMLInputElement;
+    @ViewElement()
+    protected emailInput!: Input;
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    public override async isAllowed(state: Aventus.State, pattern: string, router: Aventus.Navigation.Router): Promise<boolean | Aventus.State | string> {
+        if(!Main.user) return "/login";
+
+        const result = await Process.execute(new UserCurrentController().request());
+        if(result) {
+            this.user = result;
+            return true;
+        }
+        return '/not_found';
+    }
+
+
+    /**
+     * 
+     */
+    protected async changeEmail() {
+        const result = await new UserEditEmailController().request({ email: this.email });
+        if(result.result) {
+            this.user = result.result;
+        }
+        else {
+            this.emailInput.errors = result.errors.map(e => e.message);
+        }
+    }
+
+    /**
+     * @inheritdoc
+    */
+    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+        return {};
+    }
+
+    /**
+     * 
+     */
+    protected async editBio() {
+        let p = new ModalEditBio();
+        p.value = this.user.bio ?? '';
+        const txt = await p.show();
+        if(txt !== null) {
+            const ctrl = new UserEditBioController();
+            const bio = !txt ? undefined : txt;
+            const result = await Process.execute(ctrl.request({ bio }));
+            if(result) {
+                this.user = result;
+            }
+        }
+    }
+
+    /**
+     * 
+     */
+    protected async editEmail() {
+
+    }
+    /**
+    * 
+    */
+    protected editPicture() {
+        this.uploadPictrueEl.click();
+    }
+
+    protected async uploadFile() {
+        if(this.uploadPictrueEl.files && this.uploadPictrueEl.files.length > 0) {
+            const result = await Process.execute(new UserEditPictureController().request({ file: this.uploadPictrueEl.files[0] }));
+            if(result) {
+                this.user = result;
+            }
+        }
+    }
+
+
+    /**
+     * 
+     */
+    protected async createOrg() {
+        const modal = new ModalCreateOrg();
+        const result = await modal.show();
+        if(result) {
+            this.user.organizations.push(result);
+        }
+    }
+
+
+    //#endregion
+
+}

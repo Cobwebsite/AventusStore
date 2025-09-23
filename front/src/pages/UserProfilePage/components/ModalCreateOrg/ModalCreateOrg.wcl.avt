@@ -1,0 +1,88 @@
+import { Form, FormHandler } from "Aventus@UI:Aventus.Form.package.avt";
+import { Modal, type ModalOptions } from "../../../../components/interaction/Modal/Modal.wcl.avt";
+import { Required } from "Aventus@UI:Aventus.Form.Validators.package.avt";
+import { OrgCreateController } from "../../../../../generated/app/Http/Controllers/Org/Create/Controller.lib.avt";
+import type { Request } from "../../../../../generated/app/Http/Controllers/Org/Create/Request.lib.avt";
+import type { OrgUserResource } from "../../../../../generated/app/Http/Controllers/Org/OrgUserResource.lib.avt";
+
+export class ModalCreateOrg extends Modal<OrgUserResource | undefined> implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+    @Property()
+    public uri?: string;
+    //#endregion
+
+
+    //#region variables
+    @ViewElement()
+    protected uploadPictrueEl!: HTMLInputElement;
+
+    private form: FormHandler<Request>;
+    //#endregion
+
+
+    //#region constructor
+    public constructor() {
+        super();
+        this.form = Form.create<Request>({
+            bio: {},
+            name: Required,
+            picture: {}
+        });
+    }
+    //#endregion
+
+
+    //#region methods
+    /**
+     * @inheritdoc
+     */
+    public override configure(): ModalOptions<OrgUserResource> {
+        return {
+            title: "Organization creation",
+            closeWithClick: false,
+            closeWithEsc: true,
+        };
+    }
+
+    /**
+     * 
+     */
+    protected async uploadFile() {
+        if(this.uploadPictrueEl.files && this.uploadPictrueEl.files.length > 0) {
+            this.uri = URL.createObjectURL(this.uploadPictrueEl.files[0]);
+            this.form.item.picture = this.uploadPictrueEl.files[0];
+        }
+    }
+    /**
+    * 
+    */
+    protected editPicture() {
+        this.uploadPictrueEl.click();
+    }
+
+
+    /**
+     * 
+     */
+    protected cancel() {
+        this.resolve(undefined);
+    }
+    /**
+    * 
+    */
+    protected async save() {
+        const result = await this.form.submit(new OrgCreateController().request);
+        if(result?.result) {
+            this.resolve(result.result);
+        }
+    }
+
+    //#endregion
+
+}

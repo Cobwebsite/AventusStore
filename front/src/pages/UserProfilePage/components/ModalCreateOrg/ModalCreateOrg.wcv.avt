@@ -1,0 +1,23 @@
+<av-row>
+    <av-col size="12" size_md="6" center>
+        <div class="avatar" @press="editPicture">
+            if(this.uri) {
+                <div class="bg" style="background-image:url('{{ this.uri }}')"></div>
+            }
+            else {
+                <mi-icon icon="photo_camera"></mi-icon>
+            }
+            <input type="file" @element="uploadPictrueEl" accept="image/png, image/gif, image/jpeg, image/svg+xml"
+                @change="uploadFile" />
+        </div>
+    </av-col>
+    <av-col size="12" size_md="6" class="info">
+        <as-input label="Name" :form="this.form.parts.name"></as-input>
+        <as-input label="Bio" :form="this.form.parts.bio"></as-input>
+    </av-col>
+
+    <div class="btns">
+        <as-button variant="secondary" @press="cancel">Cancel</as-button>
+        <as-button @press="save">Save</as-button>
+    </div>
+</av-row>

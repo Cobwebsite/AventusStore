@@ -1,0 +1,22 @@
+<div class="header">
+    <h2 class="title">Validation {{ this.is_success ? "successful" : "failed" }}</h2>
+</div>
+
+if(this.is_success) {
+    <div class="success-animation">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        </svg>
+    </div>
+}
+else {
+    <div class="error-animation">
+        <svg class="cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" xmlns:bx="https://boxy-svg.com">
+            <circle class="cross__circle" cx="26" cy="26" r="25" fill="none"></circle>
+            <path class="cross__bar1" fill="none" d="M 17.571 34.578 L 34.271 17.778"></path>
+            <path class="cross__bar2" fill="none" d="M 17.615 34.622 L 34.315 17.822" style="transform-origin: 50% 50%;"
+                transform="matrix(0, 1, -1, 0, 0.000001, 0.000001)"></path>
+        </svg>
+    </div>
+}

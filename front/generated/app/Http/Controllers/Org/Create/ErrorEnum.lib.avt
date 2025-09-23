@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Org.Create {
+
+	export enum ErrorEnum {
+		NamedUsed = 1
+	}
+
+}

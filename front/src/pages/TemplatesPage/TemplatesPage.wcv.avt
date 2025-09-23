@@ -1,0 +1,27 @@
+<div class="templates-header">
+    <h1 class="templates-title">Explore Templates</h1>
+    <p class="templates-subtitle">
+       Bootstrap your next AventusJs project with our ready-to-use templates.
+    </p>
+</div>
+
+<div class="templates-search">
+    <div class="search-input-wrapper">
+        <as-input type="text" placeholder="Search for templates..." class="search-input" @change="changeSearch"
+            @bind="this.searchTxt"></as-input>
+        <div class="search-icon">
+            <mi-icon icon="search" class="icon-sm"></mi-icon>
+        </div>
+    </div>
+</div>
+if(this.templates.length > 0) {
+    <div class="templates-grid">
+        for(let p of this.templates) { 
+            <as-template-card :template="p"></as-template-card>
+        }
+    </div>
+}
+else if(this.searchResult != "") {
+    <div class="templates-empty">No templates found</div>
+}
+<as-loading></as-loading>
