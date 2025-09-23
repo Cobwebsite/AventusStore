@@ -11,8 +11,7 @@
 			],
 			"compile": [
 				{
-					"output": "../public/js/store.js",
-					"package": "../public/js/temp.package.avt"
+					"output": "../public/js/store.js"
 				}
 			],
 			"dependances": {
