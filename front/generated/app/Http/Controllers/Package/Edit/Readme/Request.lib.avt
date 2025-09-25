@@ -1,0 +1,7 @@
+namespace App.Http.Controllers.Package.Edit.Readme {
+
+	export class Request {
+		public readme!: string;
+	}
+
+}

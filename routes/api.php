@@ -3,6 +3,7 @@
 use App\Http\Middlewares\RemoteAuth;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/test', [\App\Http\Controllers\Test\Controller::class, "request"]);
 Route::post('/login', [\App\Http\Controllers\Auth\Login\Controller::class, "request"]);
 Route::post('/logout', [\App\Http\Controllers\Auth\Logout\Controller::class, "request"]);
 Route::get('/validate/{token}', [\App\Http\Controllers\Auth\ValidateEmail\Controller::class, "request"]);
@@ -32,6 +33,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/org/create', [\App\Http\Controllers\Org\Create\Controller::class, "request"]);
     Route::post('/org/edit_bio', [\App\Http\Controllers\Org\EditBio\Controller::class, "request"]);
     Route::post('/org/edit_picture', [\App\Http\Controllers\Org\EditPicture\Controller::class, "request"]);
+
+    Route::delete('/package/{name}', [\App\Http\Controllers\Package\Delete\Controller::class, "request"]);
+    Route::put('/package/{name}/readme', [\App\Http\Controllers\Package\Edit\Readme\Controller::class, "request"]);
+
+    Route::delete('/template/{name}', [\App\Http\Controllers\Template\Delete\Controller::class, "request"]);
+    Route::put('/template/{name}/readme', [\App\Http\Controllers\Template\Edit\Readme\Controller::class, "request"]);
+
 });
 
 Route::prefix("remote")->group(function () {

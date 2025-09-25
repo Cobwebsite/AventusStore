@@ -18,4 +18,6 @@ class Request extends AventusRequest
     public UploadedFile $templateFile;
     public ?UploadedFile $readMe;
     public ?array $tags = [];
+    public ?string $repository;
+    public ?string $documentation;
 }

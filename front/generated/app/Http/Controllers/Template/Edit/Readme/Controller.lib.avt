@@ -1,0 +1,15 @@
+import { Request } from './Request.lib.avt';
+import { Response } from './Response.lib.avt';
+
+namespace App.Http.Controllers.Template.Edit.Readme {
+
+	export class TemplateEditReadmeController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(name: string | number, body: Request): Promise<Aventus.ResultWithError<Response>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/template/${name}/readme`, Aventus.HttpMethod.PUT);
+			request.setBody(body);
+			return await request.queryJSON<Response>(this.router);
+		}
+	}
+
+}

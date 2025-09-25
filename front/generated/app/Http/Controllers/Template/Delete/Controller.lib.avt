@@ -1,0 +1,13 @@
+import { Response } from './Response.lib.avt';
+
+namespace App.Http.Controllers.Template.Delete {
+
+	export class TemplateDeleteController extends Aventus.HttpRoute {
+		@BindThis()
+		public async request(name: string | number): Promise<Aventus.ResultWithError<Response>> {
+			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/template/${name}`, Aventus.HttpMethod.DELETE);
+			return await request.queryJSON<Response>(this.router);
+		}
+	}
+
+}

@@ -98,9 +98,9 @@ class Controller
             }
 
             $package->description = $request->description ?? "";
-            if ($request->readMe) {
-                $package->readme = file_get_contents($request->readMe->getRealPath());
-            }
+            $package->doc = $request->documentation;
+            $package->repos = $request->repository;
+            $package->readme = $request->readMe ? file_get_contents($request->readMe->getRealPath()) : "";
             $now = Carbon::now();
             $package->version = $request->version;
             $package->release_date = $now;
@@ -132,17 +132,19 @@ class Controller
             $packageVersion->save();
 
             PackageTag::where('package_id', $package->id)->delete();
-            foreach ($request->tags as $tag) {
-                $tagClass = Tag::where('name', $tag)->first();
-                if ($tagClass == null) {
-                    $tagClass = new Tag();
-                    $tagClass->name = $tag;
-                    $tagClass->save();
+            if (isset($request->tags)) {
+                foreach ($request->tags as $tag) {
+                    $tagClass = Tag::where('name', $tag)->first();
+                    if ($tagClass == null) {
+                        $tagClass = new Tag();
+                        $tagClass->name = $tag;
+                        $tagClass->save();
+                    }
+                    $link = new PackageTag();
+                    $link->package_id = $package->id;
+                    $link->tag_id = $tagClass->id;
+                    $link->save();
                 }
-                $link = new PackageTag();
-                $link->package_id = $package->id;
-                $link->tag_id = $tagClass->id;
-                $link->save();
             }
         }
         return new Response();

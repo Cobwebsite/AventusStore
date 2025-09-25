@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Casts\ToBoolCast;
+use App\Enums\RoleEnum;
 use Aventus\Laraventus\Models\AventusModel;
+use Aventus\Laraventus\Tools\Console;
 use DateTime;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $description
  * @property string $readme
  * @property string $version
+ * @property ?string $repos
+ * @property ?string $doc
  * @property int $downloads
  * @property bool $is_project
  * @property ?int $user_id
@@ -26,7 +30,32 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Template extends AventusModel
 {
+    public static function isAdmin(int|Template|string $template): bool
+    {
+        $user = User::current();
+        if (!$user) return false;
 
+        if (is_string($template)) {
+            $template = Template::where('name', $template)->first();
+        } else if (is_int($template)) {
+            $template = Template::where('id', $template)->first();
+        }
+
+        if (!$template) return false;
+        /** @var Template $template */
+        if ($template->organization_id) {
+            $orgs = $user->organizations;
+            foreach($orgs as $org) {
+                if($org->organization_id == $template->organization_id && $org->role_id == RoleEnum::Admin->value) {
+                    return true;
+                }
+            }
+        }
+        else if($template->user_id == $user->id) {
+            return true;
+        }
+        return false;
+    }
     /**
      * The attributes that are mass assignable.
      *

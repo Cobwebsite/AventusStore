@@ -71,7 +71,7 @@ export class TemplatesPage extends Page implements Aventus.DefaultComponent {
             const txt = this.searchTxt;
             if(txt == "") {
                 if(!this.templatesRandom) {
-                    this.templatesRandom = await Process.execute(new TemplateRandomController().request({ number: 4 }));
+                    this.templatesRandom = await Process.execute(new TemplateRandomController().request({ number: 6 }));
                 }
                 this.templates = this.templatesRandom ?? [];
             }

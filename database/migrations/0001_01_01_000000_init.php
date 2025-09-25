@@ -66,7 +66,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('description');
-            $table->string('readme')->default('');
+            $table->text('readme')->default('');
             $table->string('version');
             $table->integer('downloads')->default(0);
             $table->dateTime('release_date');
@@ -98,7 +98,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('description');
-            $table->string('readme')->default('');
+            $table->text('readme')->default('');
             $table->string('version');
             $table->integer('downloads')->default(0);
             $table->boolean('is_project');

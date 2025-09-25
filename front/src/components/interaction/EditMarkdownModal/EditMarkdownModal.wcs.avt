@@ -1,0 +1,77 @@
+:host {
+	.modal {
+		background-color: var(--bg-color);
+		height: 100%;
+		max-height: 90%;
+		max-width: 90%;
+
+		.modal-body {
+			display: flex;
+			flex-direction: column;
+			height: calc(100% - 30px);
+			min-height: 0;
+
+			.body {
+				display: flex;
+				flex-grow: 1;
+				gap: 12px;
+				width: 100%;
+				height: calc(100% - 35px);
+
+				.left,
+				.right {
+					display: flex;
+					flex-direction: column;
+					height: 100%;
+					min-height: 0;
+					width: calc(50% - 6px);
+
+					.label {
+						flex-shrink: 0;
+                        margin-bottom: 6px;
+					}
+
+				}
+
+				.edit {
+					background-color: var(--input-bg);
+					border: 1px solid var(--input-border);
+					border-radius: 0.375rem;
+					color: var(--input-text);
+					display: flex;
+					flex-grow: 1;
+					font-size: 0.875rem;
+					height: 100%;
+					padding: 0.5rem 0.75rem;
+					resize: none;
+					width: 100%;
+				}
+
+				.render {
+					background-color: #1e293b;
+					border: 1px solid var(--color-secondary);
+					border-radius: 0.5rem;
+					color: var(--text-color);
+					flex-grow: 1;
+					font-family: monospace;
+					font-size: 0.875rem;
+					height: 100%;
+					overflow: auto;
+					padding: 1rem;
+					position: relative;
+					width: 100%;
+				}
+
+			}
+
+			.footer {
+				align-items: center;
+				display: flex;
+				flex-shrink: 0;
+				gap: 12px;
+				justify-content: flex-end;
+				margin-top: 16px;
+			}
+		}
+	}
+}

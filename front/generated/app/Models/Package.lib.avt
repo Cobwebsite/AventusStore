@@ -15,6 +15,8 @@ namespace App.Models {
 		public description!: string;
 		public readme!: string;
 		public version!: string;
+		public repos?: string = undefined;
+		public doc?: string = undefined;
 		public downloads!: number;
 		public user_id?: number = undefined;
 		public user?: User = undefined;

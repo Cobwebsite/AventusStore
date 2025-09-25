@@ -13,6 +13,7 @@
 	--hover-light: #f1f5f9;
 	--hover-accent: #c74a0c;
 	--hover-secondary: #475569;
+	--hover-danger: #d33d3d;
 
 	--text-color: var(--color-light);
 	--text-white: var(--color-white);

@@ -1,0 +1,50 @@
+import { Modal, type ModalOptions } from "../Modal/Modal.wcl.avt";
+import { Converter } from 'showdown';
+
+export class EditMarkdownModal extends Modal<string | null> implements Aventus.DefaultComponent {
+
+    //#region static
+
+    //#endregion
+
+
+    //#region props
+
+    //#endregion
+
+
+    //#region variables
+    @Signal()
+    public content: string = "";
+    //#endregion
+
+
+    //#region constructor
+
+    //#endregion
+
+
+    //#region methods
+    /**
+     * @inheritdoc
+     */
+    public override configure(): ModalOptions<string> {
+        return {
+            title: "Edit markdown",
+            closeWithClick: false,
+            closeWithEsc: false,
+            rejectValue: null,
+        };
+    }
+
+    public renderContent(): string {
+		let converter = new Converter({});
+        return converter.makeHtml(this.content);
+    }
+
+    public save() {
+        this.resolve(this.content);
+    }
+    //#endregion
+
+}

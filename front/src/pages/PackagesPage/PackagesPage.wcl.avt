@@ -71,7 +71,7 @@ export class PackagesPage extends Page implements Aventus.DefaultComponent {
             const txt = this.searchTxt;
             if(txt == "") {
                 if(!this.packagesRandom) {
-                    this.packagesRandom = await Process.execute(new PackageRandomController().request({ number: 4 }));
+                    this.packagesRandom = await Process.execute(new PackageRandomController().request({ number: 6 }));
                 }
                 this.packages = this.packagesRandom ?? [];
             }

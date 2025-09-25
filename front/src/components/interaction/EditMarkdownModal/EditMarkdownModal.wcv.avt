@@ -1,0 +1,14 @@
+<div class="body">
+    <div class="left">
+        <div class="label">Edit</div>
+        <textarea class="edit" @bind="this.content"></textarea>
+    </div>
+    <div class="right">
+        <div class="label">Render</div>
+        <div class="render">{{ this.renderContent() }}</div>
+    </div>
+</div>
+<div class="footer">
+    <as-button variant="secondary" @press="reject">Cancel</as-button>
+    <as-button @press="save">Save</as-button>
+</div>

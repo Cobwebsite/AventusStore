@@ -1,6 +1,10 @@
 :host {
+	.modal {
+		max-height: 100%;
+	}
 	.content {
 		line-break: anywhere;
+		overflow: auto;
 	}
 
 	.footer {

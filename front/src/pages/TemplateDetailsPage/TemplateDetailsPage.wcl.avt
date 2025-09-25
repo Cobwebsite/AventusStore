@@ -2,9 +2,15 @@ import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
 import { Converter } from 'showdown';
 import { TemplateDetailsController } from "../../../generated/app/Http/Controllers/Template/Details/Controller.lib.avt";
 import type { TemplateDetailsResource } from "../../../generated/app/Http/Controllers/Template/TemplateDetailsResource.lib.avt";
-import { Uri } from "Aventus@Main:Aventus.package.avt";
+import { NormalizedEvent, PressManager, Uri } from "Aventus@Main:Aventus.package.avt";
 import { Toast } from "../../components/interaction/Toast/Toast.wcl.avt";
 import { Process } from "Aventus@UI:Aventus.package.avt";
+import { TemplatesPageState } from "../TemplatesPage/TemplatesPageState.state.avt";
+import { Main } from "../../Main/Main.wcl.avt";
+import { Confirm } from "../../components/interaction/Confirm/Confirm.wcl.avt";
+import { TemplateDeleteController } from "../../../generated/app/Http/Controllers/Template/Delete/Controller.lib.avt";
+import { EditMarkdownModal } from "../../components/interaction/EditMarkdownModal/EditMarkdownModal.wcl.avt";
+import { TemplateEditReadmeController } from "../../../generated/app/Http/Controllers/Template/Edit/Readme/Controller.lib.avt";
 
 export class TemplateDetailsPage extends Page implements Aventus.DefaultComponent {
 
@@ -15,7 +21,9 @@ export class TemplateDetailsPage extends Page implements Aventus.DefaultComponen
 
     //#region props
     @Attribute()
-    public show_download!: boolean;
+    public no_right!: boolean;
+    @Attribute()
+    public admin!: boolean;
     //#endregion
 
 
@@ -45,6 +53,8 @@ export class TemplateDetailsPage extends Page implements Aventus.DefaultComponen
             let data = await Process.execute(new TemplateDetailsController().request(slugs['id']));
             if(data) {
                 this.template = data;
+                this.no_right = (data.doc == undefined && data.repos == undefined);
+                this.admin = data.isOwner;
                 return true;
             }
         }
@@ -64,25 +74,46 @@ export class TemplateDetailsPage extends Page implements Aventus.DefaultComponen
     /**
      * 
      */
-    protected async copyLigne() {
-        await navigator.clipboard.writeText(this.getDownloadUri());
-        await Toast.add({
-            type: "success",
-            title: "Copied"
-        });
+    protected searchTag(e: NormalizedEvent, press: PressManager) {
+        let state = new TemplatesPageState();
+        state.search = "#" + press.getElement().innerHTML;
+        Main.instance.navigate(state);
     }
 
 
     /**
      * 
      */
-    protected showDownload() {
-        this.show_download = true;
+    protected async deleteTemplate() {
+        const result = await Confirm.open({
+            title: "Confirm Template Deletion",
+            content: "Are you sure you want to delete this template? This action cannot be undone."
+        });
+        if(result) {
+            const result = await Process.execute(new TemplateDeleteController().request(this.template.name));
+            if(result?.success) {
+                location.href = "/profile";
+            }
+        }
+    }
+
+    /**
+    * 
+    */
+    protected async editMarkdown() {
+        const modal = new EditMarkdownModal();
+        modal.content = this.template.readme ?? "";
+        const result = await modal.show();
+        if(result != null) {
+            const request = await Process.execute(new TemplateEditReadmeController().request(this.template.name, { readme: result }));
+            if(request?.success) {
+                this.template.readme = result;
+            }
+        }
     }
 
     public override onShow(): void {
         super.onShow();
-        this.show_download = false;
     }
 
     protected override postCreation(): void {

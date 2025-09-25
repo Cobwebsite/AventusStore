@@ -11,6 +11,8 @@ namespace App.Http.Controllers.Remote.Package.Publish {
 		public organization?: string = undefined;
 		public packageFile!: File;
 		public readMe?: File = undefined;
+		public repository?: string = undefined;
+		public documentation?: string = undefined;
 	}
 
 }

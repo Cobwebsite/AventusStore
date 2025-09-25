@@ -82,9 +82,9 @@ class Controller
         }
 
         $template->description = $request->description ?? "";
-        if ($request->readMe) {
-            $template->readme = file_get_contents($request->readMe->getRealPath());
-        }
+        $template->doc = $request->documentation;
+        $template->repos = $request->repository;
+        $template->readme = $request->readMe ? file_get_contents($request->readMe->getRealPath()) : "";
         $now = Carbon::now();
         $template->version = $request->version;
         $template->release_date = $now;

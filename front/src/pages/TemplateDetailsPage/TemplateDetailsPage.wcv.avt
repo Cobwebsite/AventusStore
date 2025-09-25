@@ -1,42 +1,74 @@
 <header class="template-header">
-    <h1 class="template-title">{{ this.template.name }}</h1>
-    <p class="template-description">{{ this.template.description }}</p>
-    <div class="template-tags">
-        for(let tag of this.template.tags) { 
-            <span class="template-tag">{{ tag }}</span>
-        }
-    </div>
-    <div class="template-meta">
-
-        <av-router-link
-            state="{{ this.template.isUser ? '/user/' + this.template.fromName : '/org/' + this.template.fromName }}"
-            class="author-link">
-            <as-user-img :user="{username:this.template.fromName, picture: {'uri':this.template.fromImg}}"
-                class="author-avatar"></as-user-img>
-            <span class="author-name">{{ this.template.fromName }}</span>
-        </av-router-link>
-        <div class="template-version">{{ this.template.version }}</div>
-        <div class="template-downloads">
-            <mi-icon icon="download" class="icon-sm"></mi-icon>
-            <span>{{ this.template.downloads }} downloads</span>
+    <div class="template-left">
+        <h1 class="template-title">{{ this.template.name }}</h1>
+        <p class="template-description">{{ this.template.description }}</p>
+        <div class="template-tags">
+            for(let tag of this.template.tags) { 
+                <span class="template-tag"  @press="searchTag">{{ tag }}</span>
+            }
         </div>
-    </div>
-    <div class="template-download-button">
-        <a href="vscode://cobwebsite.aventus/template/download?url={{ this.getDownloadUri() }}">
-            <as-button>
-                <mi-icon icon="download" class="icon-sm mr-2"></mi-icon>
-                <span>Download</span>
-            </as-button>
-        </a>
-        <div class="download-ligne">
-            <!-- <div>{</div> -->
-            <div class="ligne">{{ this.getDownloadUri() }}</div>
-            <!-- <div>}</div> -->
-            <div class="copy" @press="copyLigne">
-                <mi-icon icon="content_copy"></mi-icon>
+        <div class="template-meta">
+            <av-router-link
+                state="{{ this.template.isUser ? '/user/' + this.template.fromName : '/org/' + this.template.fromName }}"
+                class="author-link">
+                <as-user-img :user="{username:this.template.fromName, picture: {'uri':this.template.fromImg}}"
+                    class="author-avatar"></as-user-img>
+                <span class="author-name">{{ this.template.fromName }}</span>
+            </av-router-link>
+            <div class="template-version">{{ this.template.version }}</div>
+            <div class="template-downloads">
+                <mi-icon icon="download" class="icon-sm"></mi-icon>
+                <span>{{ this.template.downloads }} downloads</span>
+            </div>
+        </div>
+        <div class="template-download-button">
+            <div class="btns">
+                <a href="vscode://cobwebsite.aventus/template/download?url={{ this.getDownloadUri() }}">
+                    <as-button>
+                        <mi-icon icon="download" class="icon-sm mr-2"></mi-icon>
+                        <span>Download</span>
+                    </as-button>
+                </a>
+                if(this.template.isOwner) {
+                    <as-button class="delete-btn" @press="deleteTemplate">
+                        <mi-icon icon="delete" class="icon-sm mr-2"></mi-icon>
+                        <span>Delete</span>
+                    </as-button>
+                }
             </div>
         </div>
     </div>
+    <div class="template-right">
+        if(this.template.repos) {
+            <div class="link">
+                <div class="link-title">Repository</div>
+                <div class="link-info">
+                    <mi-icon icon="commit"></mi-icon>
+                    <a href="{{ this.template.repos }}" target="_blank">{{ this.template.repos?.replace("https://", "") }}</a>
+                </div>
+            </div>
+        }
+        if(this.template.doc) {
+            <div class="link">
+                <div class="link-title">Documentation</div>
+                <div class="link-info">
+                    <mi-icon icon="book_4"></mi-icon>
+                    <a href="{{ this.template.doc }}" target="_blank">{{ this.template.doc?.replace("https://", "") }}</a>
+                </div>
+            </div>
+        }
+    </div>
+    
 </header>
 
-<div class="template-readme">{{ this.getReadMe() }}</div>
+if(this.template.isOwner) {
+    <div class="template-readme">
+        <div>
+            {{ this.getReadMe() }}
+        </div>
+        <mi-icon icon="edit" class="edit-btn" @press="editMarkdown"></mi-icon>
+    </div>
+}
+else {
+    <div class="template-readme">{{ this.getReadMe() }}</div>
+}

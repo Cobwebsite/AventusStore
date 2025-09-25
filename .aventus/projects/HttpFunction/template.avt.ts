@@ -60,7 +60,6 @@ export class Template extends AventusTemplate {
 
         await this.writeFile((config) => {
             if(config.templatePath.endsWith("Controller.php")) {
-                config.openFileOnEnd();
                 if(!useError && !useResponse) {
                     config.content = config.content.replace(": Error|Response", ": ");
                 }
@@ -93,6 +92,8 @@ export class Template extends AventusTemplate {
             }
             return;
         });
+
+        this.openFile(name + "/Controller.php");
     }
 
 }

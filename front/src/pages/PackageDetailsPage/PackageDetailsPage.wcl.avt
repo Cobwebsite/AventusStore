@@ -2,9 +2,15 @@ import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
 import { Converter } from 'showdown';
 import { PackageDetailsController } from "../../../generated/app/Http/Controllers/Package/Details/Controller.lib.avt";
 import type { PackageDetailsResource } from "../../../generated/app/Http/Controllers/Package/PackageDetailsResource.lib.avt";
-import { Uri } from "Aventus@Main:Aventus.package.avt";
+import { NormalizedEvent, PressManager, Uri } from "Aventus@Main:Aventus.package.avt";
 import { Toast } from "../../components/interaction/Toast/Toast.wcl.avt";
 import { Process } from "Aventus@UI:Aventus.package.avt";
+import { PackagesPageState } from "../PackagesPage/PackagesPageState.state.avt";
+import { Main } from "../../Main/Main.wcl.avt";
+import { Confirm } from "../../components/interaction/Confirm/Confirm.wcl.avt";
+import { PackageDeleteController } from "../../../generated/app/Http/Controllers/Package/Delete/Controller.lib.avt";
+import { EditMarkdownModal } from "../../components/interaction/EditMarkdownModal/EditMarkdownModal.wcl.avt";
+import { PackageEditReadmeController } from "../../../generated/app/Http/Controllers/Package/Edit/Readme/Controller.lib.avt";
 
 export class PackageDetailsPage extends Page implements Aventus.DefaultComponent {
 
@@ -16,6 +22,10 @@ export class PackageDetailsPage extends Page implements Aventus.DefaultComponent
     //#region props
     @Attribute()
     public show_download!: boolean;
+    @Attribute()
+    public no_right!: boolean;
+    @Attribute()
+    public admin!: boolean;
     //#endregion
 
 
@@ -45,6 +55,8 @@ export class PackageDetailsPage extends Page implements Aventus.DefaultComponent
             let data = await Process.execute(new PackageDetailsController().request(slugs['id']));
             if(data) {
                 this.package = data;
+                this.no_right = (data.doc == undefined && data.repos == undefined);
+                this.admin = data.isOwner;
                 return true;
             }
         }
@@ -57,7 +69,7 @@ export class PackageDetailsPage extends Page implements Aventus.DefaultComponent
         return converter.makeHtml(this.package.readme);
     }
     public getDownloadUri() {
-        return `"${this.package.name}": "${this.package.version}"`
+        return `"${this.package.name}": "${this.package.version}"`;
         // return location.protocol + "//" + location.host + "/package/download/" + this.package.name + "/" + this.package.version;
     }
 
@@ -72,6 +84,14 @@ export class PackageDetailsPage extends Page implements Aventus.DefaultComponent
         });
     }
 
+    /**
+     * 
+     */
+    protected searchTag(e: NormalizedEvent, press: PressManager) {
+        let state = new PackagesPageState();
+        state.search = "#" + press.getElement().innerHTML;
+        Main.instance.navigate(state);
+    }
 
     /**
      * 
@@ -80,9 +100,42 @@ export class PackageDetailsPage extends Page implements Aventus.DefaultComponent
         this.show_download = true;
     }
 
+
+    /**
+     * 
+     */
+    protected async deletePackage() {
+        const result = await Confirm.open({
+            title: "Confirm Package Deletion",
+            content: "Are you sure you want to delete this package? This action cannot be undone."
+        });
+        if(result) {
+            const result = await Process.execute(new PackageDeleteController().request(this.package.name));
+            if(result?.success) {
+                location.href = "/profile";
+            }
+        }
+    }
+
     public override onShow(): void {
         super.onShow();
         this.show_download = false;
+    }
+
+
+    /**
+     * 
+     */
+    protected async editMarkdown() {
+        const modal = new EditMarkdownModal();
+        modal.content = this.package.readme ?? "";
+        const result = await modal.show();
+        if(result != null) {
+            const request = await Process.execute(new PackageEditReadmeController().request(this.package.name, { readme: result }));
+            if(request?.success) {
+                this.package.readme = result;
+            }
+        }
     }
 
     protected override postCreation(): void {
