@@ -44,18 +44,19 @@ class TemplateDetailsResource extends AventusModelResource
             if ($currentUser?->id == $item->user_id) {
                 $this->isOwner = true;
             }
-        }
-        else if($item->organization != null) {
+        } else if ($item->organization != null) {
             $this->fromName = $item->organization->name;
             $this->fromImg = $item->organization->picture?->uri;
             $this->isUser = false;
 
             $currentUser = User::current();
-            $orgs = $currentUser->organizations;
-            foreach ($orgs as $org) {
-                if ($org->organization_id == $item->organization_id && $org->role_id == RoleEnum::Admin->value) {
-                    $this->isOwner = true;
-                    break;
+            if ($currentUser != null) {
+                $orgs = $currentUser->organizations;
+                foreach ($orgs as $org) {
+                    if ($org->organization_id == $item->organization_id && $org->role_id == RoleEnum::Admin->value) {
+                        $this->isOwner = true;
+                        break;
+                    }
                 }
             }
         }

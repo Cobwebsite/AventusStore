@@ -50,11 +50,13 @@ class PackageDetailsResource extends AventusModelResource
             $this->isUser = false;
 
             $currentUser = User::current();
-            $orgs = $currentUser->organizations;
-            foreach ($orgs as $org) {
-                if ($org->organization_id == $item->organization_id && $org->role_id == RoleEnum::Admin->value) {
-                    $this->isOwner = true;
-                    break;
+            if ($currentUser != null) {
+                $orgs = $currentUser->organizations;
+                foreach ($orgs as $org) {
+                    if ($org->organization_id == $item->organization_id && $org->role_id == RoleEnum::Admin->value) {
+                        $this->isOwner = true;
+                        break;
+                    }
                 }
             }
         }
