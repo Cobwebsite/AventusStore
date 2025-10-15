@@ -188,6 +188,10 @@
 			right: 1rem;
 			top: 1rem;
 		}
+
+		a {
+			color: var(--color-accent);
+		}
 	}
 
 	.template-readme:empty {

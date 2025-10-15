@@ -222,6 +222,10 @@
 			top: 1rem;
 			cursor: pointer;
 		}
+
+		a {
+			color: var(--color-accent);
+		}
 	}
 
 	.package-readme:empty {

@@ -5462,33 +5462,6 @@ let ElementExtension=class ElementExtension {
 ElementExtension.Namespace=`Aventus`;
 __as1(_, 'ElementExtension', ElementExtension);
 
-let Instance=class Instance {
-    static elements = new Map();
-    static get(type) {
-        let result = this.elements.get(type);
-        if (!result) {
-            let cst = type.prototype['constructor'];
-            result = new cst();
-            this.elements.set(type, result);
-        }
-        return result;
-    }
-    static set(el) {
-        let cst = el.constructor;
-        if (this.elements.get(cst)) {
-            return false;
-        }
-        this.elements.set(cst, el);
-        return true;
-    }
-    static destroy(el) {
-        let cst = el.constructor;
-        return this.elements.delete(cst);
-    }
-}
-Instance.Namespace=`Aventus`;
-__as1(_, 'Instance', Instance);
-
 let Style=class Style {
     static instance;
     static noAnimation;
@@ -6357,6 +6330,9 @@ let Watcher=class Watcher {
             if (data instanceof Object && !data.__isProxy) {
                 for (let key in reservedName) {
                     delete data[key];
+                }
+                for (let key in data) {
+                    clearReservedNames(data[key]);
                 }
             }
         };
@@ -7539,9 +7515,11 @@ let HttpRequest=class HttpRequest {
     }
     request;
     url;
-    constructor(url, method = HttpMethod.GET, body) {
+    methodSpoofing = false;
+    constructor(url, method = HttpMethod.GET, body, methodSpoofing = false) {
         this.url = url;
         this.request = {};
+        this.methodSpoofing = methodSpoofing;
         this.setMethod(method);
         this.prepareBody(body);
     }
@@ -7556,6 +7534,12 @@ let HttpRequest=class HttpRequest {
     }
     setMethod(method) {
         this.request.method = method;
+    }
+    /**
+     * Replace method Put/Delete by _method:"put" inside a form
+     */
+    enableMethodSpoofing() {
+        this.methodSpoofing = true;
     }
     objectToFormData(obj, formData, parentKey) {
         formData = formData || new FormData();
@@ -7636,6 +7620,20 @@ let HttpRequest=class HttpRequest {
             else {
                 this.request.body = JSON.stringify(data, this.jsonReplacer);
                 this.setHeader("Content-Type", "Application/json");
+            }
+        }
+        if (this.methodSpoofing) {
+            if (this.request.method?.toUpperCase() == Aventus.HttpMethod.PUT) {
+                if (this.request.body instanceof FormData) {
+                    this.request.body.append("_method", Aventus.HttpMethod.PUT);
+                    this.request.method = Aventus.HttpMethod.POST;
+                }
+            }
+            else if (this.request.method?.toUpperCase() == Aventus.HttpMethod.DELETE) {
+                if (this.request.body instanceof FormData) {
+                    this.request.body.append("_method", Aventus.HttpMethod.DELETE);
+                    this.request.method = Aventus.HttpMethod.POST;
+                }
             }
         }
     }
@@ -9754,6 +9752,33 @@ let Template=class Template {
 Template.Namespace=`Aventus`;
 __as1(_, 'Template', Template);
 
+let Instance=class Instance {
+    static elements = new Map();
+    static get(type) {
+        let result = this.elements.get(type);
+        if (!result) {
+            let cst = type.prototype['constructor'];
+            result = new cst();
+            this.elements.set(type, result);
+        }
+        return result;
+    }
+    static set(el) {
+        let cst = el.constructor;
+        if (this.elements.get(cst)) {
+            return false;
+        }
+        this.elements.set(cst, el);
+        return true;
+    }
+    static destroy(el) {
+        let cst = el.constructor;
+        return this.elements.delete(cst);
+    }
+}
+Instance.Namespace=`Aventus`;
+__as1(_, 'Instance', Instance);
+
 let WebComponent=class WebComponent extends HTMLElement {
     /**
      * Add attributes informations
@@ -11114,7 +11139,14 @@ let DragAndDrop=class DragAndDrop {
             }
         }
         this.draggableElement = draggableElement;
-        return this.options.onStart(e);
+        const result = this.options.onStart(e);
+        if (result !== false) {
+            document.body.style.userSelect = 'none';
+            if (window.getSelection) {
+                window.getSelection()?.removeAllRanges();
+            }
+        }
+        return result;
     }
     onDrag(e) {
         if (!this.isEnable) {
@@ -11144,6 +11176,7 @@ let DragAndDrop=class DragAndDrop {
         if (!this.isEnable) {
             return;
         }
+        document.body.style.userSelect = '';
         let targets = this.options.useMouseFinalPosition ? this.getMatchingTargetsWithMousePosition({
             x: e.clientX,
             y: e.clientY
@@ -11633,7 +11666,7 @@ const Icon = class Icon extends Aventus.WebComponent {
 }
 Icon.Namespace=`MaterialIcon`;
 Icon.Tag=`mi-icon`;
-_.Icon=Icon;
+__as1(_, 'Icon', Icon);
 if(!window.customElements.get('mi-icon')){window.customElements.define('mi-icon', Icon);Aventus.WebComponentInstance.registerDefinition(Icon);}
 
 
@@ -13807,7 +13840,6 @@ Toast.ToastManager = class ToastManager extends Aventus.WebComponent {
     __listBoolProps() { return ["not_main"].concat(super.__listBoolProps()).filter((v, i, a) => a.indexOf(v) === i); }
     async add(toast) {
         await this.mutex.waitOne();
-        console.log("inside");
         let realToast;
         if (toast instanceof _.Toast.ToastElement) {
             realToast = toast;
@@ -13917,7 +13949,6 @@ Toast.ToastManager = class ToastManager extends Aventus.WebComponent {
                 let totHeight = 0;
                 for (let notif of this.activeToasts[position]) {
                     await notif.waitTransition();
-                    console.log(notif.offsetHeight);
                     totHeight += notif.offsetHeight + this.gap;
                 }
                 if (totHeight + height < this.heightLimit) {
@@ -13934,7 +13965,6 @@ Toast.ToastManager = class ToastManager extends Aventus.WebComponent {
                     this.waitingToasts[position].push(toast);
                 }
             }
-            console.log("outside");
             this.mutex.release();
             return;
         });
@@ -15287,13 +15317,23 @@ const Footer = class Footer extends Aventus.WebComponent {
     }
     __getHtml() {
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="footer-container">    <div class="footer-content">        <div class="footer-brand">            <mi-icon icon="code" class="footer-icon"></mi-icon>            <span class="footer-title">AventusJs</span>        </div>        <p class="footer-copy" _id="footer_0"></p>        <div class="footer-social">        </div>    </div></div>` }
+        blocks: { 'default':`<div class="footer-container">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <mi-icon icon="code" class="footer-icon"></mi-icon>
+            <span class="footer-title">AventusJs</span>
+        </div>
+        <p class="footer-copy" _id="footer_0"></p>
+        <div class="footer-social">
+        </div>
+    </div>
+</div>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
   "content": {
     "footer_0°@HTML": {
-      "fct": (c) => `\r\n            &copy; ${c.print(c.comp.__6445892e3b1981dca4f1cae255c1f123method0())} AventusJs. All Rights Reserved.\r\n        `,
+      "fct": (c) => `\n            &copy; ${c.print(c.comp.__6445892e3b1981dca4f1cae255c1f123method0())} AventusJs. All Rights Reserved.\n        `,
       "once": true
     }
   }
@@ -15325,7 +15365,9 @@ const Button = class Button extends Aventus.Form.ButtonElement {
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
         slots: { 'default':`<slot></slot>` }, 
-        blocks: { 'default':`<slot></slot><div class="loader-mask">    <div class="loader"></div></div>` }
+        blocks: { 'default':`<slot></slot><div class="loader-mask">
+    <div class="loader"></div>
+</div>` }
     });
 }
     getClassName() {
@@ -15524,7 +15566,9 @@ const ValidationResultPage = class ValidationResultPage extends Aventus.Navigati
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="header">    <h2 class="title" _id="validationresultpage_0"></h2></div><template _id="validationresultpage_1"></template>` }
+        blocks: { 'default':`<div class="header">
+    <h2 class="title" _id="validationresultpage_0"></h2>
+</div><template _id="validationresultpage_1"></template>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -15533,7 +15577,22 @@ const ValidationResultPage = class ValidationResultPage extends Aventus.Navigati
       "fct": (c) => `Validation ${c.print(c.comp.__2e3d027074dee4b27b5c8cf8926eb06fmethod1())}`
     }
   }
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`    <div class="success-animation">        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"></circle>            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"></path>        </svg>    </div>`);const templ1 = new Aventus.Template(this);templ1.setTemplate(`    <div class="error-animation">        <svg class="cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" xmlns:bx="https://boxy-svg.com">            <circle class="cross__circle" cx="26" cy="26" r="25" fill="none"></circle>            <path class="cross__bar1" fill="none" d="M 17.571 34.578 L 34.271 17.778"></path>            <path class="cross__bar2" fill="none" d="M 17.615 34.622 L 34.315 17.822" style="transform-origin: 50% 50%;" transform="matrix(0, 1, -1, 0, 0.000001, 0.000001)"></path>        </svg>    </div>`);this.__getStatic().__template.addIf({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+    <div class="success-animation">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"></circle>
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"></path>
+        </svg>
+    </div>
+`);const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+    <div class="error-animation">
+        <svg class="cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" xmlns:bx="https://boxy-svg.com">
+            <circle class="cross__circle" cx="26" cy="26" r="25" fill="none"></circle>
+            <path class="cross__bar1" fill="none" d="M 17.571 34.578 L 34.271 17.778"></path>
+            <path class="cross__bar2" fill="none" d="M 17.615 34.622 L 34.315 17.822" style="transform-origin: 50% 50%;" transform="matrix(0, 1, -1, 0, 0.000001, 0.000001)"></path>
+        </svg>
+    </div>
+`);this.__getStatic().__template.addIf({
                     anchorId: 'validationresultpage_1',
                     parts: [{once: true,
                     condition: (c) => c.comp.__2e3d027074dee4b27b5c8cf8926eb06fmethod0(),
@@ -15585,10 +15644,46 @@ const ForgotPasswordPage = class ForgotPasswordPage extends Aventus.Navigation.P
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="forgot-header">    <h2 class="forgot-title">Forgot your password?</h2>    <p class="forgot-subtext">        Enter your email and we'll send you a reset link.    </p></div><div class="forgot-form-wrapper">    <div class="forgot-form-card">        <template _id="forgotpasswordpage_0"></template>    </div></div>` }
+        blocks: { 'default':`<div class="forgot-header">
+    <h2 class="forgot-title">Forgot your password?</h2>
+    <p class="forgot-subtext">
+        Enter your email and we'll send you a reset link.
+    </p>
+</div><div class="forgot-form-wrapper">
+    <div class="forgot-form-card">
+        <template _id="forgotpasswordpage_0"></template>
+    </div>
+</div>` }
     });
 }
-    __registerTemplateAction() { super.__registerTemplateAction();const templ0 = new Aventus.Template(this);templ0.setTemplate(`            <div class="forgot-confirmation">                <h3 class="confirmation-title">Check your email</h3>                <p class="confirmation-text">                    If an account exists for <strong>{email}</strong>, you will receive an email with instructions on                    how to reset your password.                </p>                <av-router-link to="/login" class="back-link">                    <as-button>Back to Login</as-button>                </av-router-link>            </div>        `);const templ1 = new Aventus.Template(this);templ1.setTemplate(`            <form class="forgot-form">                <div class="form-group">                    <label htmlFor="email" class="form-label">                        Email address                    </label>                    <div class="form-field">                        <as-input id="email" name="email" type="email" autoComplete="email" required></as-input>                    </div>                </div>                <div>                    <as-button type="submit" class="btn-full">                        Send reset link                    </as-button>                </div>            </form>        `);this.__getStatic().__template.addIf({
+    __registerTemplateAction() { super.__registerTemplateAction();const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+            <div class="forgot-confirmation">
+                <h3 class="confirmation-title">Check your email</h3>
+                <p class="confirmation-text">
+                    If an account exists for <strong>{email}</strong>, you will receive an email with instructions on
+                    how to reset your password.
+                </p>
+                <av-router-link to="/login" class="back-link">
+                    <as-button>Back to Login</as-button>
+                </av-router-link>
+            </div>
+        `);const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+            <form class="forgot-form">
+                <div class="form-group">
+                    <label htmlFor="email" class="form-label">
+                        Email address
+                    </label>
+                    <div class="form-field">
+                        <as-input id="email" name="email" type="email" autoComplete="email" required></as-input>
+                    </div>
+                </div>
+                <div>
+                    <as-button type="submit" class="btn-full">
+                        Send reset link
+                    </as-button>
+                </div>
+            </form>
+        `);this.__getStatic().__template.addIf({
                     anchorId: 'forgotpasswordpage_0',
                     parts: [{once: true,
                     condition: (c) => c.comp.__a9eaad3d630e71dc6baeabc0c2c586e5method0(),
@@ -15924,7 +16019,9 @@ const Card = class Card extends Aventus.WebComponent {
     __getHtml() {
     this.__getStatic().__template.setHTML({
         slots: { 'default':`<slot></slot>` }, 
-        blocks: { 'default':`<div class="card">    <slot></slot></div>` }
+        blocks: { 'default':`<div class="card">
+    <slot></slot>
+</div>` }
     });
 }
     getClassName() {
@@ -16658,7 +16755,28 @@ const OrganizationPage = class OrganizationPage extends Aventus.Navigation.Page 
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="profile-header">    <div class="avatar">        <as-user-img class="img" _id="organizationpage_0"></as-user-img>    </div>    <div>        <h1 class="username" _id="organizationpage_1"></h1>        <p class="bio">            <span _id="organizationpage_2"></span>        </p>    </div></div><as-tabs>    <as-tab label="Packages" _id="organizationpage_3">        <div class="cards-grid">            <template _id="organizationpage_4"></template>        </div>    </as-tab>    <as-tab label="Templates" _id="organizationpage_6">        <div class="cards-grid">            <template _id="organizationpage_7"></template>        </div>    </as-tab></as-tabs>` }
+        blocks: { 'default':`<div class="profile-header">
+    <div class="avatar">
+        <as-user-img class="img" _id="organizationpage_0"></as-user-img>
+    </div>
+    <div>
+        <h1 class="username" _id="organizationpage_1"></h1>
+        <p class="bio">
+            <span _id="organizationpage_2"></span>
+        </p>
+    </div>
+</div><as-tabs>
+    <as-tab label="Packages" _id="organizationpage_3">
+        <div class="cards-grid">
+            <template _id="organizationpage_4"></template>
+        </div>
+    </as-tab>
+    <as-tab label="Templates" _id="organizationpage_6">
+        <div class="cards-grid">
+            <template _id="organizationpage_7"></template>
+        </div>
+    </as-tab>
+</as-tabs>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -16688,7 +16806,9 @@ const OrganizationPage = class OrganizationPage extends Aventus.Navigation.Page 
       "once": true
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                <as-package-card no_owner _id="organizationpage_5"></as-package-card>            `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+                <as-package-card no_owner _id="organizationpage_5"></as-package-card>
+            `);templ0.setActions({
   "injection": [
     {
       "id": "organizationpage_5",
@@ -16700,7 +16820,9 @@ const OrganizationPage = class OrganizationPage extends Aventus.Navigation.Page 
 });this.__getStatic().__template.addLoop({
                     anchorId: 'organizationpage_4',
                     template: templ0,
-                simple:{data: "this.org.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`                <as-template-card no_owner _id="organizationpage_8"></as-template-card>            `);templ1.setActions({
+                simple:{data: "this.org.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+                <as-template-card no_owner _id="organizationpage_8"></as-template-card>
+            `);templ1.setActions({
   "injection": [
     {
       "id": "organizationpage_8",
@@ -16889,7 +17011,19 @@ const PackagesPage = class PackagesPage extends Aventus.Navigation.Page {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="packages-header">    <h1 class="packages-title">Explore Packages</h1>    <p class="packages-subtitle">        Find the perfect building blocks for your AventusJs application.    </p></div><div class="packages-search">    <div class="search-input-wrapper">        <as-input type="text" placeholder="Search for packages..." class="search-input" _id="packagespage_0"></as-input>        <div class="search-icon">            <mi-icon icon="search" class="icon-sm"></mi-icon>        </div>    </div></div><template _id="packagespage_1"></template><as-loading></as-loading>` }
+        blocks: { 'default':`<div class="packages-header">
+    <h1 class="packages-title">Explore Packages</h1>
+    <p class="packages-subtitle">
+        Find the perfect building blocks for your AventusJs application.
+    </p>
+</div><div class="packages-search">
+    <div class="search-input-wrapper">
+        <as-input type="text" placeholder="Search for packages..." class="search-input" _id="packagespage_0"></as-input>
+        <div class="search-icon">
+            <mi-icon icon="search" class="icon-sm"></mi-icon>
+        </div>
+    </div>
+</div><template _id="packagespage_1"></template><as-loading></as-loading>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -16914,7 +17048,13 @@ const PackagesPage = class PackagesPage extends Aventus.Navigation.Page {
       "isCallback": true
     }
   ]
-});const templ1 = new Aventus.Template(this);templ1.setTemplate(`    <div class="packages-grid">        <template _id="packagespage_2"></template>    </div>`);const templ3 = new Aventus.Template(this);templ3.setTemplate(`             <as-package-card _id="packagespage_3"></as-package-card>        `);templ3.setActions({
+});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+    <div class="packages-grid">
+        <template _id="packagespage_2"></template>
+    </div>
+`);const templ3 = new Aventus.Template(this);templ3.setTemplate(` 
+            <as-package-card _id="packagespage_3"></as-package-card>
+        `);templ3.setActions({
   "injection": [
     {
       "id": "packagespage_3",
@@ -16926,7 +17066,9 @@ const PackagesPage = class PackagesPage extends Aventus.Navigation.Page {
 });templ1.addLoop({
                     anchorId: 'packagespage_2',
                     template: templ3,
-                simple:{data: "this.packages",item:"p"}});const templ2 = new Aventus.Template(this);templ2.setTemplate(`    <div class="packages-empty">No packages found</div>`);this.__getStatic().__template.addIf({
+                simple:{data: "this.packages",item:"p"}});const templ2 = new Aventus.Template(this);templ2.setTemplate(`
+    <div class="packages-empty">No packages found</div>
+`);this.__getStatic().__template.addIf({
                     anchorId: 'packagespage_1',
                     parts: [{once: true,
                     condition: (c) => c.comp.__d75e202a7e0493149d77ed808e3dbc7amethod0(),
@@ -17205,10 +17347,71 @@ const HomePage = class HomePage extends Aventus.Navigation.Page {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="homepage">    <section class="hero">        <div class="hero-background"></div>        <div class="container">            <h1 class="hero-title">                The Webcomponent <span class="highlight">JavaScript</span> Framework            </h1>            <p class="hero-subtitle">                AventusJs provides the building blocks to create powerful, fast, and scalable web applications with an                amazing developer experience.            </p>            <div class="hero-buttons">                <av-router-link state="/packages">                    <as-button variant="primary" class="btn-lg">                        Search Packages                    </as-button>                </av-router-link>                <av-router-link state="/templates">                    <as-button variant="secondary" class="btn-lg">                        Explore Templates                    </as-button>                </av-router-link>            </div>        </div>    </section>    <section class="section">        <div class="text-center">            <h2 class="section-title">Featured Packages</h2>            <p class="section-description">Discover powerful packages to supercharge your project.</p>        </div>        <div class="card-grid">            <template _id="homepage_0"></template>        </div>        <div class="section-footer">            <av-router-link to="/packages">                <as-button variant="ghost">                    <span>View All Packages</span>                    <mi-icon icon="chevron_right" class="icon-right"></mi-icon>                </as-button>            </av-router-link>        </div>    </section>    <section class="section">        <div class="text-center">            <h2 class="section-title">Featured Templates</h2>            <p class="section-description">Start your next project with a solid foundation.</p>        </div>        <div class="card-grid">            <template _id="homepage_2"></template>        </div>        <div class="section-footer">            <av-router-link to="/templates">                <as-button variant="ghost">                    <span>View All Templates</span>                    <mi-icon icon="chevron_right" class="icon-right"></mi-icon>                </as-button>            </av-router-link>        </div>    </section></div>` }
+        blocks: { 'default':`<div class="homepage">
+    <section class="hero">
+        <div class="hero-background"></div>
+        <div class="container">
+            <h1 class="hero-title">
+                The Webcomponent <span class="highlight">JavaScript</span> Framework
+            </h1>
+            <p class="hero-subtitle">
+                AventusJs provides the building blocks to create powerful, fast, and scalable web applications with an
+                amazing developer experience.
+            </p>
+            <div class="hero-buttons">
+                <av-router-link state="/packages">
+                    <as-button variant="primary" class="btn-lg">
+                        Search Packages
+                    </as-button>
+                </av-router-link>
+                <av-router-link state="/templates">
+                    <as-button variant="secondary" class="btn-lg">
+                        Explore Templates
+                    </as-button>
+                </av-router-link>
+            </div>
+        </div>
+    </section>
+    <section class="section">
+        <div class="text-center">
+            <h2 class="section-title">Featured Packages</h2>
+            <p class="section-description">Discover powerful packages to supercharge your project.</p>
+        </div>
+        <div class="card-grid">
+            <template _id="homepage_0"></template>
+        </div>
+        <div class="section-footer">
+            <av-router-link to="/packages">
+                <as-button variant="ghost">
+                    <span>View All Packages</span>
+                    <mi-icon icon="chevron_right" class="icon-right"></mi-icon>
+                </as-button>
+            </av-router-link>
+        </div>
+    </section>
+    <section class="section">
+        <div class="text-center">
+            <h2 class="section-title">Featured Templates</h2>
+            <p class="section-description">Start your next project with a solid foundation.</p>
+        </div>
+        <div class="card-grid">
+            <template _id="homepage_2"></template>
+        </div>
+        <div class="section-footer">
+            <av-router-link to="/templates">
+                <as-button variant="ghost">
+                    <span>View All Templates</span>
+                    <mi-icon icon="chevron_right" class="icon-right"></mi-icon>
+                </as-button>
+            </av-router-link>
+        </div>
+    </section>
+</div>` }
     });
 }
-    __registerTemplateAction() { super.__registerTemplateAction();const templ0 = new Aventus.Template(this);templ0.setTemplate(`                <as-package-card _id="homepage_1"></as-package-card>            `);templ0.setActions({
+    __registerTemplateAction() { super.__registerTemplateAction();const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+                <as-package-card _id="homepage_1"></as-package-card>
+            `);templ0.setActions({
   "injection": [
     {
       "id": "homepage_1",
@@ -17220,7 +17423,9 @@ const HomePage = class HomePage extends Aventus.Navigation.Page {
 });this.__getStatic().__template.addLoop({
                     anchorId: 'homepage_0',
                     template: templ0,
-                simple:{data: "this.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`                <as-template-card _id="homepage_3"></as-template-card>            `);templ1.setActions({
+                simple:{data: "this.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+                <as-template-card _id="homepage_3"></as-template-card>
+            `);templ1.setActions({
   "injection": [
     {
       "id": "homepage_3",
@@ -17517,7 +17722,23 @@ const Toast = class Toast extends Aventus.Toast.ToastElement {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="toast-content">    <div class="toast-flex">        <div class="toast-icon-wrapper">            <mi-icon class="toast-icon" aria-hidden="true" _id="toast_0"></mi-icon>        </div>        <div class="toast-message-wrapper">            <p class="toast-title" _id="toast_1"></p>            <template _id="toast_2"></template>        </div>        <div class="toast-close-wrapper">            <button class="toast-close-button" _id="toast_4">                <span class="sr-only">Close</span>                <mi-icon icon="close" class="toast-close-icon"></mi-icon>            </button>        </div>    </div></div>` }
+        blocks: { 'default':`<div class="toast-content">
+    <div class="toast-flex">
+        <div class="toast-icon-wrapper">
+            <mi-icon class="toast-icon" aria-hidden="true" _id="toast_0"></mi-icon>
+        </div>
+        <div class="toast-message-wrapper">
+            <p class="toast-title" _id="toast_1"></p>
+            <template _id="toast_2"></template>
+        </div>
+        <div class="toast-close-wrapper">
+            <button class="toast-close-button" _id="toast_4">
+                <span class="sr-only">Close</span>
+                <mi-icon icon="close" class="toast-close-icon"></mi-icon>
+            </button>
+        </div>
+    </div>
+</div>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -17538,7 +17759,9 @@ const Toast = class Toast extends Aventus.Toast.ToastElement {
       "fct": (e, c) => c.comp.close(e)
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                <p class="toast-message" _id="toast_3"></p>            `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+                <p class="toast-message" _id="toast_3"></p>
+            `);templ0.setActions({
   "content": {
     "toast_3°@HTML": {
       "fct": (c) => `${c.print(c.comp.__7d0e796e41a97c78b09f71a4664c5f80method3())}`,
@@ -17809,7 +18032,22 @@ const ModalCreateOrg = class ModalCreateOrg extends Modal {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<av-row>    <av-col size="12" size_md="6" center>        <div class="avatar" _id="modalcreateorg_0">            <template _id="modalcreateorg_1"></template>            <input type="file" accept="image/png, image/gif, image/jpeg, image/svg+xml" _id="modalcreateorg_3" />        </div>    </av-col>    <av-col size="12" size_md="6" class="info">        <as-input label="Name" _id="modalcreateorg_4"></as-input>        <as-input label="Bio" _id="modalcreateorg_5"></as-input>    </av-col>    <div class="btns">        <as-button variant="secondary" _id="modalcreateorg_6">Cancel</as-button>        <as-button _id="modalcreateorg_7">Save</as-button>    </div></av-row>` }
+        blocks: { 'default':`<av-row>
+    <av-col size="12" size_md="6" center>
+        <div class="avatar" _id="modalcreateorg_0">
+            <template _id="modalcreateorg_1"></template>
+            <input type="file" accept="image/png, image/gif, image/jpeg, image/svg+xml" _id="modalcreateorg_3" />
+        </div>
+    </av-col>
+    <av-col size="12" size_md="6" class="info">
+        <as-input label="Name" _id="modalcreateorg_4"></as-input>
+        <as-input label="Bio" _id="modalcreateorg_5"></as-input>
+    </av-col>
+    <div class="btns">
+        <as-button variant="secondary" _id="modalcreateorg_6">Cancel</as-button>
+        <as-button _id="modalcreateorg_7">Save</as-button>
+    </div>
+</av-row>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -17856,14 +18094,18 @@ const ModalCreateOrg = class ModalCreateOrg extends Modal {
       "onPress": (e, pressInstance, c) => { c.comp.save(e, pressInstance); }
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                <div class="bg" _id="modalcreateorg_2"></div>            `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+                <div class="bg" _id="modalcreateorg_2"></div>
+            `);templ0.setActions({
   "content": {
     "modalcreateorg_2°style": {
       "fct": (c) => `background-image:url('${c.print(c.comp.__1866c25329103211c52baff0e955ddc8method1())}')`,
       "once": true
     }
   }
-});const templ1 = new Aventus.Template(this);templ1.setTemplate(`                <mi-icon icon="photo_camera"></mi-icon>            `);this.__getStatic().__template.addIf({
+});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+                <mi-icon icon="photo_camera"></mi-icon>
+            `);this.__getStatic().__template.addIf({
                     anchorId: 'modalcreateorg_1',
                     parts: [{once: true,
                     condition: (c) => c.comp.__1866c25329103211c52baff0e955ddc8method0(),
@@ -17941,7 +18183,10 @@ const ModalEditBio = class ModalEditBio extends Modal {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<as-input label="Description" _id="modaleditbio_0"></as-input><div class="footer">    <as-button variant="secondary" _id="modaleditbio_1">Cancel</as-button>    <as-button _id="modaleditbio_2">Save</as-button></div>` }
+        blocks: { 'default':`<as-input label="Description" _id="modaleditbio_0"></as-input><div class="footer">
+    <as-button variant="secondary" _id="modaleditbio_1">Cancel</as-button>
+    <as-button _id="modaleditbio_2">Save</as-button>
+</div>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -18024,7 +18269,33 @@ const OrganizationAdminPage = class OrganizationAdminPage extends Aventus.Naviga
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="profile-header">    <div class="avatar">        <as-user-img class="img" _id="organizationadminpage_0"></as-user-img>        <div class="edit" _id="organizationadminpage_1">            <mi-icon icon="edit"></mi-icon>            <input type="file" accept="image/png, image/gif, image/jpeg, image/svg+xml" _id="organizationadminpage_2" />        </div>    </div>    <div>        <h1 class="username" _id="organizationadminpage_3"></h1>        <p _id="organizationadminpage_4">            <span _id="organizationadminpage_5"></span>            <mi-icon icon="edit" _id="organizationadminpage_6"></mi-icon>        </p>    </div></div><as-tabs>    <as-tab label="Packages" _id="organizationadminpage_7">        <div class="cards-grid">            <template _id="organizationadminpage_8"></template>        </div>    </as-tab>    <as-tab label="Templates" _id="organizationadminpage_10">        <div class="cards-grid">            <template _id="organizationadminpage_11"></template>        </div>    </as-tab></as-tabs>` }
+        blocks: { 'default':`<div class="profile-header">
+    <div class="avatar">
+        <as-user-img class="img" _id="organizationadminpage_0"></as-user-img>
+        <div class="edit" _id="organizationadminpage_1">
+            <mi-icon icon="edit"></mi-icon>
+            <input type="file" accept="image/png, image/gif, image/jpeg, image/svg+xml" _id="organizationadminpage_2" />
+        </div>
+    </div>
+    <div>
+        <h1 class="username" _id="organizationadminpage_3"></h1>
+        <p _id="organizationadminpage_4">
+            <span _id="organizationadminpage_5"></span>
+            <mi-icon icon="edit" _id="organizationadminpage_6"></mi-icon>
+        </p>
+    </div>
+</div><as-tabs>
+    <as-tab label="Packages" _id="organizationadminpage_7">
+        <div class="cards-grid">
+            <template _id="organizationadminpage_8"></template>
+        </div>
+    </as-tab>
+    <as-tab label="Templates" _id="organizationadminpage_10">
+        <div class="cards-grid">
+            <template _id="organizationadminpage_11"></template>
+        </div>
+    </as-tab>
+</as-tabs>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -18082,7 +18353,9 @@ const OrganizationAdminPage = class OrganizationAdminPage extends Aventus.Naviga
       "onPress": (e, pressInstance, c) => { c.comp.editBio(e, pressInstance); }
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                <as-package-card no_owner _id="organizationadminpage_9"></as-package-card>            `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+                <as-package-card no_owner _id="organizationadminpage_9"></as-package-card>
+            `);templ0.setActions({
   "injection": [
     {
       "id": "organizationadminpage_9",
@@ -18094,7 +18367,9 @@ const OrganizationAdminPage = class OrganizationAdminPage extends Aventus.Naviga
 });this.__getStatic().__template.addLoop({
                     anchorId: 'organizationadminpage_8',
                     template: templ0,
-                simple:{data: "this.org.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`                <as-template-card no_owner _id="organizationadminpage_12"></as-template-card>            `);templ1.setActions({
+                simple:{data: "this.org.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+                <as-template-card no_owner _id="organizationadminpage_12"></as-template-card>
+            `);templ1.setActions({
   "injection": [
     {
       "id": "organizationadminpage_12",
@@ -18202,7 +18477,19 @@ const EditMarkdownModal = class EditMarkdownModal extends Modal {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="body">    <div class="left">        <div class="label">Edit</div>        <textarea class="edit" _id="editmarkdownmodal_0"></textarea>    </div>    <div class="right">        <div class="label">Render</div>        <div class="render" _id="editmarkdownmodal_1"></div>    </div></div><div class="footer">    <as-button variant="secondary" _id="editmarkdownmodal_2">Cancel</as-button>    <as-button _id="editmarkdownmodal_3">Save</as-button></div>` }
+        blocks: { 'default':`<div class="body">
+    <div class="left">
+        <div class="label">Edit</div>
+        <textarea class="edit" _id="editmarkdownmodal_0"></textarea>
+    </div>
+    <div class="right">
+        <div class="label">Render</div>
+        <div class="render" _id="editmarkdownmodal_1"></div>
+    </div>
+</div><div class="footer">
+    <as-button variant="secondary" _id="editmarkdownmodal_2">Cancel</as-button>
+    <as-button _id="editmarkdownmodal_3">Save</as-button>
+</div>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -18366,7 +18653,7 @@ const TemplateDetailsPage = class TemplateDetailsPage extends Aventus.Navigation
 					}    __registerWatchesActions() {
     this.__addWatchesActions("template");    super.__registerWatchesActions();
 }
-    static __style = `:host{margin:0 auto;max-width:80rem;padding:3rem 2rem}:host .template-header{border-bottom:1px solid var(--color-secondary);display:flex;gap:16px;justify-content:stretch;padding-bottom:2rem}:host .template-header .template-left{flex-grow:1}:host .template-header .template-left .template-title{color:var(--text-color);font-size:2.25rem;font-weight:800}:host .template-header .template-left .template-description{color:var(--text-muted);font-size:1.25rem;margin-top:1rem}:host .template-header .template-left .template-tags{display:flex;flex-wrap:wrap;gap:.5rem}:host .template-header .template-left .template-tags .template-tag{background-color:var(--tag-bg);border-radius:.25rem;color:var(--tag-text);cursor:pointer;font-size:.8rem;font-weight:500;padding:.5rem .75rem;transition:background-color .2s ease-in-out}:host .template-header .template-left .template-tags .template-tag:hover{background-color:var(--tag-bg-hover)}:host .template-header .template-left .template-meta{align-items:center;display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.5rem}:host .template-header .template-left .author-link{align-items:center;display:flex;font-size:.875rem;gap:.5rem;text-decoration:none}:host .template-header .template-left .author-link .author-avatar{border-radius:9999px;font-size:12px;height:2rem;letter-spacing:0px;width:2rem}:host .template-header .template-left .author-link .author-name{color:var(--text-color);font-weight:600;transition:color .2s ease-in-out}:host .template-header .template-left .author-link:hover .author-name{color:var(--color-accent)}:host .template-header .template-left .template-version{background-color:#1e293b;border-radius:.25rem;font-family:monospace;font-size:.875rem;padding:.25rem .5rem}:host .template-header .template-left .template-downloads{align-items:center;color:var(--text-muted);display:flex;font-size:.875rem;gap:.5rem}:host .template-header .template-left .template-download-button{margin-top:1.5rem}:host .template-header .template-left .template-download-button .btns{display:flex;gap:12px}:host .template-header .template-left .template-download-button .btns .delete-btn{--button-bg-color: var(--color-danger);--button-hover-bg-color: var(--hover-danger)}:host .template-header .template-right{border-left:1px solid var(--color-secondary);display:flex;flex-direction:column;flex-shrink:0;width:400px}:host .template-header .template-right .link{border-bottom:1px solid var(--color-secondary);margin:0 16px;padding:16px}:host .template-header .template-right .link .link-title{color:var(--text-muted)}:host .template-header .template-right .link .link-info{display:flex;gap:12px;margin-top:12px}:host .template-header .template-right .link .link-info a{color:inherit;font-size:15px;text-decoration:none}:host .template-header .template-right .link .link-info a:hover{color:var(--color-accent)}:host .template-header .template-right .link:last-child{border-bottom:none}:host .icon-sm{align-items:center;display:flex;font-size:1.25rem;height:1.25rem;justify-content:center;width:1.25rem}:host .mr-2{margin-right:.5rem}:host .template-readme{background-color:#1e293b;border:1px solid var(--color-secondary);border-radius:.5rem;color:var(--text-color);font-family:monospace;font-size:.875rem;margin-top:2rem;overflow-x:auto;padding:1rem;position:relative}:host .template-readme mi-icon.edit-btn{cursor:pointer;position:absolute;right:1rem;top:1rem}:host .template-readme:empty{display:none}:host([no_right]) .template-header .template-right{display:none}:host([admin]) .template-readme{min-height:4rem}`;
+    static __style = `:host{margin:0 auto;max-width:80rem;padding:3rem 2rem}:host .template-header{border-bottom:1px solid var(--color-secondary);display:flex;gap:16px;justify-content:stretch;padding-bottom:2rem}:host .template-header .template-left{flex-grow:1}:host .template-header .template-left .template-title{color:var(--text-color);font-size:2.25rem;font-weight:800}:host .template-header .template-left .template-description{color:var(--text-muted);font-size:1.25rem;margin-top:1rem}:host .template-header .template-left .template-tags{display:flex;flex-wrap:wrap;gap:.5rem}:host .template-header .template-left .template-tags .template-tag{background-color:var(--tag-bg);border-radius:.25rem;color:var(--tag-text);cursor:pointer;font-size:.8rem;font-weight:500;padding:.5rem .75rem;transition:background-color .2s ease-in-out}:host .template-header .template-left .template-tags .template-tag:hover{background-color:var(--tag-bg-hover)}:host .template-header .template-left .template-meta{align-items:center;display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.5rem}:host .template-header .template-left .author-link{align-items:center;display:flex;font-size:.875rem;gap:.5rem;text-decoration:none}:host .template-header .template-left .author-link .author-avatar{border-radius:9999px;font-size:12px;height:2rem;letter-spacing:0px;width:2rem}:host .template-header .template-left .author-link .author-name{color:var(--text-color);font-weight:600;transition:color .2s ease-in-out}:host .template-header .template-left .author-link:hover .author-name{color:var(--color-accent)}:host .template-header .template-left .template-version{background-color:#1e293b;border-radius:.25rem;font-family:monospace;font-size:.875rem;padding:.25rem .5rem}:host .template-header .template-left .template-downloads{align-items:center;color:var(--text-muted);display:flex;font-size:.875rem;gap:.5rem}:host .template-header .template-left .template-download-button{margin-top:1.5rem}:host .template-header .template-left .template-download-button .btns{display:flex;gap:12px}:host .template-header .template-left .template-download-button .btns .delete-btn{--button-bg-color: var(--color-danger);--button-hover-bg-color: var(--hover-danger)}:host .template-header .template-right{border-left:1px solid var(--color-secondary);display:flex;flex-direction:column;flex-shrink:0;width:400px}:host .template-header .template-right .link{border-bottom:1px solid var(--color-secondary);margin:0 16px;padding:16px}:host .template-header .template-right .link .link-title{color:var(--text-muted)}:host .template-header .template-right .link .link-info{display:flex;gap:12px;margin-top:12px}:host .template-header .template-right .link .link-info a{color:inherit;font-size:15px;text-decoration:none}:host .template-header .template-right .link .link-info a:hover{color:var(--color-accent)}:host .template-header .template-right .link:last-child{border-bottom:none}:host .icon-sm{align-items:center;display:flex;font-size:1.25rem;height:1.25rem;justify-content:center;width:1.25rem}:host .mr-2{margin-right:.5rem}:host .template-readme{background-color:#1e293b;border:1px solid var(--color-secondary);border-radius:.5rem;color:var(--text-color);font-family:monospace;font-size:.875rem;margin-top:2rem;overflow-x:auto;padding:1rem;position:relative}:host .template-readme mi-icon.edit-btn{cursor:pointer;position:absolute;right:1rem;top:1rem}:host .template-readme a{color:var(--color-accent)}:host .template-readme:empty{display:none}:host([no_right]) .template-header .template-right{display:none}:host([admin]) .template-readme{min-height:4rem}`;
     __getStatic() {
         return TemplateDetailsPage;
     }
@@ -18377,7 +18664,41 @@ const TemplateDetailsPage = class TemplateDetailsPage extends Aventus.Navigation
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<header class="template-header">    <div class="template-left">        <h1 class="template-title" _id="templatedetailspage_0"></h1>        <p class="template-description" _id="templatedetailspage_1"></p>        <div class="template-tags">            <template _id="templatedetailspage_2"></template>        </div>        <div class="template-meta">            <av-router-link class="author-link" _id="templatedetailspage_4">                <as-user-img class="author-avatar" _id="templatedetailspage_5"></as-user-img>                <span class="author-name" _id="templatedetailspage_6"></span>            </av-router-link>            <div class="template-version" _id="templatedetailspage_7"></div>            <div class="template-downloads">                <mi-icon icon="download" class="icon-sm"></mi-icon>                <span _id="templatedetailspage_8"></span>            </div>        </div>        <div class="template-download-button">            <div class="btns">                <a _id="templatedetailspage_9">                    <as-button>                        <mi-icon icon="download" class="icon-sm mr-2"></mi-icon>                        <span>Download</span>                    </as-button>                </a>                <template _id="templatedetailspage_10"></template>            </div>        </div>    </div>    <div class="template-right">        <template _id="templatedetailspage_12"></template>        <template _id="templatedetailspage_14"></template>    </div></header><template _id="templatedetailspage_16"></template>` }
+        blocks: { 'default':`<header class="template-header">
+    <div class="template-left">
+        <h1 class="template-title" _id="templatedetailspage_0"></h1>
+        <p class="template-description" _id="templatedetailspage_1"></p>
+        <div class="template-tags">
+            <template _id="templatedetailspage_2"></template>
+        </div>
+        <div class="template-meta">
+            <av-router-link class="author-link" _id="templatedetailspage_4">
+                <as-user-img class="author-avatar" _id="templatedetailspage_5"></as-user-img>
+                <span class="author-name" _id="templatedetailspage_6"></span>
+            </av-router-link>
+            <div class="template-version" _id="templatedetailspage_7"></div>
+            <div class="template-downloads">
+                <mi-icon icon="download" class="icon-sm"></mi-icon>
+                <span _id="templatedetailspage_8"></span>
+            </div>
+        </div>
+        <div class="template-download-button">
+            <div class="btns">
+                <a _id="templatedetailspage_9">
+                    <as-button>
+                        <mi-icon icon="download" class="icon-sm mr-2"></mi-icon>
+                        <span>Download</span>
+                    </as-button>
+                </a>
+                <template _id="templatedetailspage_10"></template>
+            </div>
+        </div>
+    </div>
+    <div class="template-right">
+        <template _id="templatedetailspage_12"></template>
+        <template _id="templatedetailspage_14"></template>
+    </div>
+</header><template _id="templatedetailspage_16"></template>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -18418,7 +18739,9 @@ const TemplateDetailsPage = class TemplateDetailsPage extends Aventus.Navigation
       "once": true
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                 <span class="template-tag" _id="templatedetailspage_3"></span>            `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(` 
+                <span class="template-tag" _id="templatedetailspage_3"></span>
+            `);templ0.setActions({
   "content": {
     "templatedetailspage_3°@HTML": {
       "fct": (c) => `${c.print(c.comp.__de96e0640d4de42f59926e8b87571d87method7(c.data.tag))}`,
@@ -18434,7 +18757,12 @@ const TemplateDetailsPage = class TemplateDetailsPage extends Aventus.Navigation
 });this.__getStatic().__template.addLoop({
                     anchorId: 'templatedetailspage_2',
                     template: templ0,
-                simple:{data: "this.template.tags",item:"tag"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`                    <as-button class="delete-btn" _id="templatedetailspage_11">                        <mi-icon icon="delete" class="icon-sm mr-2"></mi-icon>                        <span>Delete</span>                    </as-button>                `);templ1.setActions({
+                simple:{data: "this.template.tags",item:"tag"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+                    <as-button class="delete-btn" _id="templatedetailspage_11">
+                        <mi-icon icon="delete" class="icon-sm mr-2"></mi-icon>
+                        <span>Delete</span>
+                    </as-button>
+                `);templ1.setActions({
   "pressEvents": [
     {
       "id": "templatedetailspage_11",
@@ -18447,7 +18775,15 @@ const TemplateDetailsPage = class TemplateDetailsPage extends Aventus.Navigation
                     condition: (c) => c.comp.__de96e0640d4de42f59926e8b87571d87method1(),
                     template: templ1
                 }]
-            });const templ2 = new Aventus.Template(this);templ2.setTemplate(`            <div class="link">                <div class="link-title">Repository</div>                <div class="link-info">                    <mi-icon icon="commit"></mi-icon>                    <a target="_blank" _id="templatedetailspage_13"></a>                </div>            </div>        `);templ2.setActions({
+            });const templ2 = new Aventus.Template(this);templ2.setTemplate(`
+            <div class="link">
+                <div class="link-title">Repository</div>
+                <div class="link-info">
+                    <mi-icon icon="commit"></mi-icon>
+                    <a target="_blank" _id="templatedetailspage_13"></a>
+                </div>
+            </div>
+        `);templ2.setActions({
   "content": {
     "templatedetailspage_13°href": {
       "fct": (c) => `${c.print(c.comp.__de96e0640d4de42f59926e8b87571d87method14())}`,
@@ -18463,7 +18799,15 @@ const TemplateDetailsPage = class TemplateDetailsPage extends Aventus.Navigation
                     condition: (c) => c.comp.__de96e0640d4de42f59926e8b87571d87method2(),
                     template: templ2
                 }]
-            });const templ3 = new Aventus.Template(this);templ3.setTemplate(`            <div class="link">                <div class="link-title">Documentation</div>                <div class="link-info">                    <mi-icon icon="book_4"></mi-icon>                    <a target="_blank" _id="templatedetailspage_15"></a>                </div>            </div>        `);templ3.setActions({
+            });const templ3 = new Aventus.Template(this);templ3.setTemplate(`
+            <div class="link">
+                <div class="link-title">Documentation</div>
+                <div class="link-info">
+                    <mi-icon icon="book_4"></mi-icon>
+                    <a target="_blank" _id="templatedetailspage_15"></a>
+                </div>
+            </div>
+        `);templ3.setActions({
   "content": {
     "templatedetailspage_15°href": {
       "fct": (c) => `${c.print(c.comp.__de96e0640d4de42f59926e8b87571d87method16())}`,
@@ -18479,10 +18823,15 @@ const TemplateDetailsPage = class TemplateDetailsPage extends Aventus.Navigation
                     condition: (c) => c.comp.__de96e0640d4de42f59926e8b87571d87method3(),
                     template: templ3
                 }]
-            });const templ4 = new Aventus.Template(this);templ4.setTemplate(`    <div class="template-readme">        <div _id="templatedetailspage_17"></div>        <mi-icon icon="edit" class="edit-btn" _id="templatedetailspage_18"></mi-icon>    </div>`);templ4.setActions({
+            });const templ4 = new Aventus.Template(this);templ4.setTemplate(`
+    <div class="template-readme">
+        <div _id="templatedetailspage_17"></div>
+        <mi-icon icon="edit" class="edit-btn" _id="templatedetailspage_18"></mi-icon>
+    </div>
+`);templ4.setActions({
   "content": {
     "templatedetailspage_17°@HTML": {
-      "fct": (c) => `\r\n            ${c.print(c.comp.__de96e0640d4de42f59926e8b87571d87method18())}\r\n        `,
+      "fct": (c) => `\n            ${c.print(c.comp.__de96e0640d4de42f59926e8b87571d87method18())}\n        `,
       "once": true
     }
   },
@@ -18492,7 +18841,9 @@ const TemplateDetailsPage = class TemplateDetailsPage extends Aventus.Navigation
       "onPress": (e, pressInstance, c) => { c.comp.editMarkdown(e, pressInstance); }
     }
   ]
-});const templ5 = new Aventus.Template(this);templ5.setTemplate(`    <div class="template-readme" _id="templatedetailspage_19"></div>`);templ5.setActions({
+});const templ5 = new Aventus.Template(this);templ5.setTemplate(`
+    <div class="template-readme" _id="templatedetailspage_19"></div>
+`);templ5.setActions({
   "content": {
     "templatedetailspage_19°@HTML": {
       "fct": (c) => `${c.print(c.comp.__de96e0640d4de42f59926e8b87571d87method18())}`,
@@ -18647,7 +18998,7 @@ const PackageDetailsPage = class PackageDetailsPage extends Aventus.Navigation.P
 					}    __registerWatchesActions() {
     this.__addWatchesActions("package");    super.__registerWatchesActions();
 }
-    static __style = `:host{margin:0 auto;max-width:80rem;padding:3rem 2rem}:host .package-header{border-bottom:1px solid var(--color-secondary);display:flex;gap:16px;justify-content:stretch;padding-bottom:2rem}:host .package-header .package-left{flex-grow:1}:host .package-header .package-left .package-title{color:var(--text-color);font-size:2.25rem;font-weight:800}:host .package-header .package-left .package-description{color:var(--text-muted);font-size:1.25rem;margin-top:1rem}:host .package-header .package-left .package-tags{display:flex;flex-wrap:wrap;gap:.5rem}:host .package-header .package-left .package-tags .package-tag{background-color:var(--tag-bg);border-radius:.25rem;color:var(--tag-text);cursor:pointer;font-size:.8rem;font-weight:500;padding:.5rem .75rem;transition:background-color .2s ease-in-out}:host .package-header .package-left .package-tags .package-tag:hover{background-color:var(--tag-bg-hover)}:host .package-header .package-left .package-meta{align-items:center;display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.5rem}:host .package-header .package-left .package-meta .author-link{align-items:center;display:flex;font-size:.875rem;gap:.5rem;text-decoration:none}:host .package-header .package-left .package-meta .author-link .author-avatar{border-radius:9999px;font-size:12px;height:2rem;letter-spacing:0px;width:2rem}:host .package-header .package-left .package-meta .author-link .author-name{color:var(--text-color);font-weight:600;transition:color .2s ease-in-out}:host .package-header .package-left .package-meta .author-link:hover .author-name{color:var(--color-accent)}:host .package-header .package-left .package-meta .package-version{background-color:#1e293b;border-radius:.25rem;font-family:monospace;font-size:.875rem;padding:.25rem .5rem}:host .package-header .package-left .package-meta .package-downloads{align-items:center;color:var(--text-muted);display:flex;font-size:.875rem;gap:.5rem}:host .package-header .package-left .package-download-button{margin-top:1.5rem}:host .package-header .package-left .package-download-button .btns{display:flex;gap:12px}:host .package-header .package-left .package-download-button .btns .delete-btn{--button-bg-color: var(--color-danger);--button-hover-bg-color: var(--hover-danger)}:host .package-header .package-left .package-download-button .download-ligne{align-items:center;background-color:#1e293b;border:1px solid var(--color-secondary);border-radius:.5rem;color:var(--text-color);display:flex;font-family:monospace;font-size:.875rem;margin-top:.5rem;padding:16px}:host .package-header .package-left .package-download-button .download-ligne .ligne{flex-grow:1}:host .package-header .package-left .package-download-button .download-ligne .copy{align-items:center;border-radius:.5rem;cursor:pointer;display:flex;flex-shrink:0;justify-content:center}:host .package-header .package-left .package-download-button .download-ligne .copy mi-icon{font-size:18px;padding:8px}:host .package-header .package-left .package-download-button .download-ligne .copy:hover{background-color:var(--hover-secondary)}:host .package-header .package-right{border-left:1px solid var(--color-secondary);display:flex;flex-direction:column;flex-shrink:0;width:400px}:host .package-header .package-right .link{border-bottom:1px solid var(--color-secondary);margin:0 16px;padding:16px}:host .package-header .package-right .link .link-title{color:var(--text-muted)}:host .package-header .package-right .link .link-info{display:flex;gap:12px;margin-top:12px}:host .package-header .package-right .link .link-info a{color:inherit;font-size:15px;text-decoration:none}:host .package-header .package-right .link .link-info a:hover{color:var(--color-accent)}:host .package-header .package-right .link:last-child{border-bottom:none}:host .icon-sm{align-items:center;display:flex;font-size:1.25rem;height:1.25rem;justify-content:center;width:1.25rem}:host .mr-2{margin-right:.5rem}:host .package-readme{background-color:#1e293b;border:1px solid var(--color-secondary);border-radius:.5rem;color:var(--text-color);font-family:monospace;font-size:.875rem;margin-top:2rem;overflow-x:auto;padding:1rem;position:relative}:host .package-readme mi-icon.edit-btn{position:absolute;right:1rem;top:1rem;cursor:pointer}:host .package-readme:empty{display:none}:host(:not([show_download])) .package-header .package-left .package-download-button .download-ligne{display:none}:host([no_right]) .package-header .package-right{display:none}:host([admin]) .package-readme{min-height:4rem}`;
+    static __style = `:host{margin:0 auto;max-width:80rem;padding:3rem 2rem}:host .package-header{border-bottom:1px solid var(--color-secondary);display:flex;gap:16px;justify-content:stretch;padding-bottom:2rem}:host .package-header .package-left{flex-grow:1}:host .package-header .package-left .package-title{color:var(--text-color);font-size:2.25rem;font-weight:800}:host .package-header .package-left .package-description{color:var(--text-muted);font-size:1.25rem;margin-top:1rem}:host .package-header .package-left .package-tags{display:flex;flex-wrap:wrap;gap:.5rem}:host .package-header .package-left .package-tags .package-tag{background-color:var(--tag-bg);border-radius:.25rem;color:var(--tag-text);cursor:pointer;font-size:.8rem;font-weight:500;padding:.5rem .75rem;transition:background-color .2s ease-in-out}:host .package-header .package-left .package-tags .package-tag:hover{background-color:var(--tag-bg-hover)}:host .package-header .package-left .package-meta{align-items:center;display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.5rem}:host .package-header .package-left .package-meta .author-link{align-items:center;display:flex;font-size:.875rem;gap:.5rem;text-decoration:none}:host .package-header .package-left .package-meta .author-link .author-avatar{border-radius:9999px;font-size:12px;height:2rem;letter-spacing:0px;width:2rem}:host .package-header .package-left .package-meta .author-link .author-name{color:var(--text-color);font-weight:600;transition:color .2s ease-in-out}:host .package-header .package-left .package-meta .author-link:hover .author-name{color:var(--color-accent)}:host .package-header .package-left .package-meta .package-version{background-color:#1e293b;border-radius:.25rem;font-family:monospace;font-size:.875rem;padding:.25rem .5rem}:host .package-header .package-left .package-meta .package-downloads{align-items:center;color:var(--text-muted);display:flex;font-size:.875rem;gap:.5rem}:host .package-header .package-left .package-download-button{margin-top:1.5rem}:host .package-header .package-left .package-download-button .btns{display:flex;gap:12px}:host .package-header .package-left .package-download-button .btns .delete-btn{--button-bg-color: var(--color-danger);--button-hover-bg-color: var(--hover-danger)}:host .package-header .package-left .package-download-button .download-ligne{align-items:center;background-color:#1e293b;border:1px solid var(--color-secondary);border-radius:.5rem;color:var(--text-color);display:flex;font-family:monospace;font-size:.875rem;margin-top:.5rem;padding:16px}:host .package-header .package-left .package-download-button .download-ligne .ligne{flex-grow:1}:host .package-header .package-left .package-download-button .download-ligne .copy{align-items:center;border-radius:.5rem;cursor:pointer;display:flex;flex-shrink:0;justify-content:center}:host .package-header .package-left .package-download-button .download-ligne .copy mi-icon{font-size:18px;padding:8px}:host .package-header .package-left .package-download-button .download-ligne .copy:hover{background-color:var(--hover-secondary)}:host .package-header .package-right{border-left:1px solid var(--color-secondary);display:flex;flex-direction:column;flex-shrink:0;width:400px}:host .package-header .package-right .link{border-bottom:1px solid var(--color-secondary);margin:0 16px;padding:16px}:host .package-header .package-right .link .link-title{color:var(--text-muted)}:host .package-header .package-right .link .link-info{display:flex;gap:12px;margin-top:12px}:host .package-header .package-right .link .link-info a{color:inherit;font-size:15px;text-decoration:none}:host .package-header .package-right .link .link-info a:hover{color:var(--color-accent)}:host .package-header .package-right .link:last-child{border-bottom:none}:host .icon-sm{align-items:center;display:flex;font-size:1.25rem;height:1.25rem;justify-content:center;width:1.25rem}:host .mr-2{margin-right:.5rem}:host .package-readme{background-color:#1e293b;border:1px solid var(--color-secondary);border-radius:.5rem;color:var(--text-color);font-family:monospace;font-size:.875rem;margin-top:2rem;overflow-x:auto;padding:1rem;position:relative}:host .package-readme mi-icon.edit-btn{position:absolute;right:1rem;top:1rem;cursor:pointer}:host .package-readme a{color:var(--color-accent)}:host .package-readme:empty{display:none}:host(:not([show_download])) .package-header .package-left .package-download-button .download-ligne{display:none}:host([no_right]) .package-header .package-right{display:none}:host([admin]) .package-readme{min-height:4rem}`;
     __getStatic() {
         return PackageDetailsPage;
     }
@@ -18658,7 +19009,45 @@ const PackageDetailsPage = class PackageDetailsPage extends Aventus.Navigation.P
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<header class="package-header">    <div class="package-left">        <h1 class="package-title" _id="packagedetailspage_0"></h1>        <p class="package-description" _id="packagedetailspage_1"></p>        <div class="package-tags">            <template _id="packagedetailspage_2"></template>        </div>        <div class="package-meta">            <av-router-link class="author-link" _id="packagedetailspage_4">                <as-user-img class="author-avatar" _id="packagedetailspage_5"></as-user-img>                <span class="author-name" _id="packagedetailspage_6"></span>            </av-router-link>            <div class="package-version" _id="packagedetailspage_7"></div>            <div class="package-downloads">                <mi-icon icon="download" class="icon-sm"></mi-icon>                <span _id="packagedetailspage_8"></span>            </div>        </div>        <div class="package-download-button">            <div class="btns">                <as-button _id="packagedetailspage_9">                    <mi-icon icon="download" class="icon-sm mr-2"></mi-icon>                    <span>Download</span>                </as-button>                <template _id="packagedetailspage_10"></template>            </div>            <div class="download-ligne">                <div class="ligne" _id="packagedetailspage_12"></div>                <div class="copy" _id="packagedetailspage_13">                    <mi-icon icon="content_copy"></mi-icon>                </div>            </div>        </div>    </div>    <div class="package-right">        <template _id="packagedetailspage_14"></template>        <template _id="packagedetailspage_16"></template>    </div></header><template _id="packagedetailspage_18"></template>` }
+        blocks: { 'default':`<header class="package-header">
+    <div class="package-left">
+        <h1 class="package-title" _id="packagedetailspage_0"></h1>
+        <p class="package-description" _id="packagedetailspage_1"></p>
+        <div class="package-tags">
+            <template _id="packagedetailspage_2"></template>
+        </div>
+        <div class="package-meta">
+            <av-router-link class="author-link" _id="packagedetailspage_4">
+                <as-user-img class="author-avatar" _id="packagedetailspage_5"></as-user-img>
+                <span class="author-name" _id="packagedetailspage_6"></span>
+            </av-router-link>
+            <div class="package-version" _id="packagedetailspage_7"></div>
+            <div class="package-downloads">
+                <mi-icon icon="download" class="icon-sm"></mi-icon>
+                <span _id="packagedetailspage_8"></span>
+            </div>
+        </div>
+        <div class="package-download-button">
+            <div class="btns">
+                <as-button _id="packagedetailspage_9">
+                    <mi-icon icon="download" class="icon-sm mr-2"></mi-icon>
+                    <span>Download</span>
+                </as-button>
+                <template _id="packagedetailspage_10"></template>
+            </div>
+            <div class="download-ligne">
+                <div class="ligne" _id="packagedetailspage_12"></div>
+                <div class="copy" _id="packagedetailspage_13">
+                    <mi-icon icon="content_copy"></mi-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="package-right">
+        <template _id="packagedetailspage_14"></template>
+        <template _id="packagedetailspage_16"></template>
+    </div>
+</header><template _id="packagedetailspage_18"></template>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -18709,7 +19098,9 @@ const PackageDetailsPage = class PackageDetailsPage extends Aventus.Navigation.P
       "onPress": (e, pressInstance, c) => { c.comp.copyLigne(e, pressInstance); }
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                 <span class="package-tag" _id="packagedetailspage_3"></span>            `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(` 
+                <span class="package-tag" _id="packagedetailspage_3"></span>
+            `);templ0.setActions({
   "content": {
     "packagedetailspage_3°@HTML": {
       "fct": (c) => `${c.print(c.comp.__2288f4ee871702d4fd3a313e21ad52c5method7(c.data.tag))}`,
@@ -18725,7 +19116,12 @@ const PackageDetailsPage = class PackageDetailsPage extends Aventus.Navigation.P
 });this.__getStatic().__template.addLoop({
                     anchorId: 'packagedetailspage_2',
                     template: templ0,
-                simple:{data: "this.package.tags",item:"tag"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`                    <as-button class="delete-btn" _id="packagedetailspage_11">                        <mi-icon icon="delete" class="icon-sm mr-2"></mi-icon>                        <span>Delete</span>                    </as-button>                `);templ1.setActions({
+                simple:{data: "this.package.tags",item:"tag"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+                    <as-button class="delete-btn" _id="packagedetailspage_11">
+                        <mi-icon icon="delete" class="icon-sm mr-2"></mi-icon>
+                        <span>Delete</span>
+                    </as-button>
+                `);templ1.setActions({
   "pressEvents": [
     {
       "id": "packagedetailspage_11",
@@ -18738,7 +19134,15 @@ const PackageDetailsPage = class PackageDetailsPage extends Aventus.Navigation.P
                     condition: (c) => c.comp.__2288f4ee871702d4fd3a313e21ad52c5method1(),
                     template: templ1
                 }]
-            });const templ2 = new Aventus.Template(this);templ2.setTemplate(`            <div class="link">                <div class="link-title">Repository</div>                <div class="link-info">                    <mi-icon icon="commit"></mi-icon>                    <a target="_blank" _id="packagedetailspage_15"></a>                </div>            </div>        `);templ2.setActions({
+            });const templ2 = new Aventus.Template(this);templ2.setTemplate(`
+            <div class="link">
+                <div class="link-title">Repository</div>
+                <div class="link-info">
+                    <mi-icon icon="commit"></mi-icon>
+                    <a target="_blank" _id="packagedetailspage_15"></a>
+                </div>
+            </div>
+        `);templ2.setActions({
   "content": {
     "packagedetailspage_15°href": {
       "fct": (c) => `${c.print(c.comp.__2288f4ee871702d4fd3a313e21ad52c5method14())}`,
@@ -18754,7 +19158,15 @@ const PackageDetailsPage = class PackageDetailsPage extends Aventus.Navigation.P
                     condition: (c) => c.comp.__2288f4ee871702d4fd3a313e21ad52c5method2(),
                     template: templ2
                 }]
-            });const templ3 = new Aventus.Template(this);templ3.setTemplate(`            <div class="link">                <div class="link-title">Documentation</div>                <div class="link-info">                    <mi-icon icon="book_4"></mi-icon>                    <a target="_blank" _id="packagedetailspage_17"></a>                </div>            </div>        `);templ3.setActions({
+            });const templ3 = new Aventus.Template(this);templ3.setTemplate(`
+            <div class="link">
+                <div class="link-title">Documentation</div>
+                <div class="link-info">
+                    <mi-icon icon="book_4"></mi-icon>
+                    <a target="_blank" _id="packagedetailspage_17"></a>
+                </div>
+            </div>
+        `);templ3.setActions({
   "content": {
     "packagedetailspage_17°href": {
       "fct": (c) => `${c.print(c.comp.__2288f4ee871702d4fd3a313e21ad52c5method16())}`,
@@ -18770,10 +19182,15 @@ const PackageDetailsPage = class PackageDetailsPage extends Aventus.Navigation.P
                     condition: (c) => c.comp.__2288f4ee871702d4fd3a313e21ad52c5method3(),
                     template: templ3
                 }]
-            });const templ4 = new Aventus.Template(this);templ4.setTemplate(`    <div class="package-readme">        <div _id="packagedetailspage_19"></div>        <mi-icon icon="edit" class="edit-btn" _id="packagedetailspage_20"></mi-icon>    </div>`);templ4.setActions({
+            });const templ4 = new Aventus.Template(this);templ4.setTemplate(`
+    <div class="package-readme">
+        <div _id="packagedetailspage_19"></div>
+        <mi-icon icon="edit" class="edit-btn" _id="packagedetailspage_20"></mi-icon>
+    </div>
+`);templ4.setActions({
   "content": {
     "packagedetailspage_19°@HTML": {
-      "fct": (c) => `\r\n            ${c.print(c.comp.__2288f4ee871702d4fd3a313e21ad52c5method18())}\r\n        `,
+      "fct": (c) => `\n            ${c.print(c.comp.__2288f4ee871702d4fd3a313e21ad52c5method18())}\n        `,
       "once": true
     }
   },
@@ -18783,7 +19200,9 @@ const PackageDetailsPage = class PackageDetailsPage extends Aventus.Navigation.P
       "onPress": (e, pressInstance, c) => { c.comp.editMarkdown(e, pressInstance); }
     }
   ]
-});const templ5 = new Aventus.Template(this);templ5.setTemplate(`    <div class="package-readme" _id="packagedetailspage_21"></div>`);templ5.setActions({
+});const templ5 = new Aventus.Template(this);templ5.setTemplate(`
+    <div class="package-readme" _id="packagedetailspage_21"></div>
+`);templ5.setActions({
   "content": {
     "packagedetailspage_21°@HTML": {
       "fct": (c) => `${c.print(c.comp.__2288f4ee871702d4fd3a313e21ad52c5method18())}`,
@@ -18980,7 +19399,19 @@ const TemplatesPage = class TemplatesPage extends Aventus.Navigation.Page {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="templates-header">    <h1 class="templates-title">Explore Templates</h1>    <p class="templates-subtitle">       Bootstrap your next AventusJs project with our ready-to-use templates.    </p></div><div class="templates-search">    <div class="search-input-wrapper">        <as-input type="text" placeholder="Search for templates..." class="search-input" _id="templatespage_0"></as-input>        <div class="search-icon">            <mi-icon icon="search" class="icon-sm"></mi-icon>        </div>    </div></div><template _id="templatespage_1"></template><as-loading></as-loading>` }
+        blocks: { 'default':`<div class="templates-header">
+    <h1 class="templates-title">Explore Templates</h1>
+    <p class="templates-subtitle">
+       Bootstrap your next AventusJs project with our ready-to-use templates.
+    </p>
+</div><div class="templates-search">
+    <div class="search-input-wrapper">
+        <as-input type="text" placeholder="Search for templates..." class="search-input" _id="templatespage_0"></as-input>
+        <div class="search-icon">
+            <mi-icon icon="search" class="icon-sm"></mi-icon>
+        </div>
+    </div>
+</div><template _id="templatespage_1"></template><as-loading></as-loading>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -19005,7 +19436,13 @@ const TemplatesPage = class TemplatesPage extends Aventus.Navigation.Page {
       "isCallback": true
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`    <div class="templates-grid">        <template _id="templatespage_2"></template>    </div>`);const templ2 = new Aventus.Template(this);templ2.setTemplate(`             <as-template-card _id="templatespage_3"></as-template-card>        `);templ2.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+    <div class="templates-grid">
+        <template _id="templatespage_2"></template>
+    </div>
+`);const templ2 = new Aventus.Template(this);templ2.setTemplate(` 
+            <as-template-card _id="templatespage_3"></as-template-card>
+        `);templ2.setActions({
   "injection": [
     {
       "id": "templatespage_3",
@@ -19017,7 +19454,9 @@ const TemplatesPage = class TemplatesPage extends Aventus.Navigation.Page {
 });templ0.addLoop({
                     anchorId: 'templatespage_2',
                     template: templ2,
-                simple:{data: "this.templates",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`    <div class="templates-empty">No templates found</div>`);this.__getStatic().__template.addIf({
+                simple:{data: "this.templates",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+    <div class="templates-empty">No templates found</div>
+`);this.__getStatic().__template.addIf({
                     anchorId: 'templatespage_1',
                     parts: [{once: true,
                     condition: (c) => c.comp.__944e817e76f557f6ffd876937383aa87method0(),
@@ -19152,7 +19591,34 @@ const UserPage = class UserPage extends Aventus.Navigation.Page {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="profile-header">    <div class="avatar">        <as-user-img class="img" _id="userpage_0"></as-user-img>    </div>    <div>        <h1 class="username" _id="userpage_1"></h1>        <p class="bio">            <span _id="userpage_2"></span>        </p>        <p class="join-date" _id="userpage_3"></p>    </div></div><as-tabs>    <as-tab label="Packages" _id="userpage_4">        <div class="cards-grid">            <template _id="userpage_5"></template>        </div>    </as-tab>    <as-tab label="Templates" _id="userpage_7">        <div class="cards-grid">             <template _id="userpage_8"></template>        </div>    </as-tab>    <as-tab label="Organizations" _id="userpage_10">        <div class="list">            <template _id="userpage_11"></template>        </div>    </as-tab></as-tabs>` }
+        blocks: { 'default':`<div class="profile-header">
+    <div class="avatar">
+        <as-user-img class="img" _id="userpage_0"></as-user-img>
+    </div>
+    <div>
+        <h1 class="username" _id="userpage_1"></h1>
+        <p class="bio">
+            <span _id="userpage_2"></span>
+        </p>
+        <p class="join-date" _id="userpage_3"></p>
+    </div>
+</div><as-tabs>
+    <as-tab label="Packages" _id="userpage_4">
+        <div class="cards-grid">
+            <template _id="userpage_5"></template>
+        </div>
+    </as-tab>
+    <as-tab label="Templates" _id="userpage_7">
+        <div class="cards-grid">
+             <template _id="userpage_8"></template>
+        </div>
+    </as-tab>
+    <as-tab label="Organizations" _id="userpage_10">
+        <div class="list">
+            <template _id="userpage_11"></template>
+        </div>
+    </as-tab>
+</as-tabs>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -19190,7 +19656,9 @@ const UserPage = class UserPage extends Aventus.Navigation.Page {
       "once": true
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                <as-package-card no_owner _id="userpage_6"></as-package-card>            `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+                <as-package-card no_owner _id="userpage_6"></as-package-card>
+            `);templ0.setActions({
   "injection": [
     {
       "id": "userpage_6",
@@ -19202,7 +19670,9 @@ const UserPage = class UserPage extends Aventus.Navigation.Page {
 });this.__getStatic().__template.addLoop({
                     anchorId: 'userpage_5',
                     template: templ0,
-                simple:{data: "this.user.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`                <as-template-card no_owner _id="userpage_9"></as-template-card>            `);templ1.setActions({
+                simple:{data: "this.user.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+                <as-template-card no_owner _id="userpage_9"></as-template-card>
+            `);templ1.setActions({
   "injection": [
     {
       "id": "userpage_9",
@@ -19214,7 +19684,15 @@ const UserPage = class UserPage extends Aventus.Navigation.Page {
 });this.__getStatic().__template.addLoop({
                     anchorId: 'userpage_8',
                     template: templ1,
-                simple:{data: "this.user.templates",item:"p"}});const templ2 = new Aventus.Template(this);templ2.setTemplate(`                <av-link _id="userpage_12">                    <div class="item">                        <span class="name" _id="userpage_13"></span>                        <span>-</span>                        <div class="role" _id="userpage_14"></div>                    </div>                </av-link>            `);templ2.setActions({
+                simple:{data: "this.user.templates",item:"p"}});const templ2 = new Aventus.Template(this);templ2.setTemplate(`
+                <av-link _id="userpage_12">
+                    <div class="item">
+                        <span class="name" _id="userpage_13"></span>
+                        <span>-</span>
+                        <div class="role" _id="userpage_14"></div>
+                    </div>
+                </av-link>
+            `);templ2.setActions({
   "content": {
     "userpage_12°to": {
       "fct": (c) => `/org/${c.print(c.comp.__70664b655c5ebf5512e5d15976b27ea2method12(c.data.org))}`,
@@ -19326,7 +19804,70 @@ const UserProfilePage = class UserProfilePage extends Aventus.Navigation.Page {
     }
     __getHtml() {super.__getHtml();
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<div class="profile-header">    <div class="avatar">        <as-user-img class="img" _id="userprofilepage_0"></as-user-img>        <div class="edit" _id="userprofilepage_1">            <mi-icon icon="edit"></mi-icon>            <input type="file" accept="image/png, image/gif, image/jpeg, image/svg+xml" _id="userprofilepage_2" />        </div>    </div>    <div>        <h1 class="username" _id="userprofilepage_3"></h1>        <p _id="userprofilepage_4">            <span _id="userprofilepage_5"></span>            <mi-icon icon="edit" _id="userprofilepage_6"></mi-icon>        </p>        <p class="join-date" _id="userprofilepage_7"></p>    </div></div><as-tabs>    <as-tab label="Packages" _id="userprofilepage_8">        <div class="cards-grid">            <template _id="userprofilepage_9"></template>        </div>    </as-tab>    <as-tab label="Templates" _id="userprofilepage_11">        <div class="cards-grid">            <template _id="userprofilepage_12"></template>        </div>    </as-tab>    <as-tab label="Organizations" _id="userprofilepage_14">        <div class="actions">            <as-button _id="userprofilepage_15">Create</as-button>        </div>        <div class="list">            <template _id="userprofilepage_16"></template>        </div>    </as-tab>    <as-tab label="Settings" icon="settings">        <av-row>            <av-col size="12" size_md="6">                <as-card class="settings-card">                    <div class="settings-card-content">                        <div class="title">Update Mail</div>                        <as-input label="Mail" _id="userprofilepage_20"></as-input>                        <div class="btn">                            <as-button variant="primary" _id="userprofilepage_21">Save</as-button>                        </div>                    </div>                </as-card>            </av-col>            <av-col size="12" size_md="6">                <as-card class="settings-card">                    <div class="settings-card-content">                        <div class="title">Change Password</div>                        <as-input label="Old Password" type="password"></as-input>                        <as-input label="New Password" type="password"></as-input>                        <as-input label="Repeat New Password" type="password"></as-input>                        <div class="btn">                            <as-button variant="primary">Save</as-button>                        </div>                    </div>                </as-card>            </av-col>        </av-row>    </as-tab></as-tabs>` }
+        blocks: { 'default':`<div class="profile-header">
+    <div class="avatar">
+        <as-user-img class="img" _id="userprofilepage_0"></as-user-img>
+        <div class="edit" _id="userprofilepage_1">
+            <mi-icon icon="edit"></mi-icon>
+            <input type="file" accept="image/png, image/gif, image/jpeg, image/svg+xml" _id="userprofilepage_2" />
+        </div>
+    </div>
+    <div>
+        <h1 class="username" _id="userprofilepage_3"></h1>
+        <p _id="userprofilepage_4">
+            <span _id="userprofilepage_5"></span>
+            <mi-icon icon="edit" _id="userprofilepage_6"></mi-icon>
+        </p>
+        <p class="join-date" _id="userprofilepage_7"></p>
+    </div>
+</div><as-tabs>
+    <as-tab label="Packages" _id="userprofilepage_8">
+        <div class="cards-grid">
+            <template _id="userprofilepage_9"></template>
+        </div>
+    </as-tab>
+    <as-tab label="Templates" _id="userprofilepage_11">
+        <div class="cards-grid">
+            <template _id="userprofilepage_12"></template>
+        </div>
+    </as-tab>
+    <as-tab label="Organizations" _id="userprofilepage_14">
+        <div class="actions">
+            <as-button _id="userprofilepage_15">Create</as-button>
+        </div>
+        <div class="list">
+            <template _id="userprofilepage_16"></template>
+        </div>
+    </as-tab>
+    <as-tab label="Settings" icon="settings">
+        <av-row>
+            <av-col size="12" size_md="6">
+                <as-card class="settings-card">
+                    <div class="settings-card-content">
+                        <div class="title">Update Mail</div>
+                        <as-input label="Mail" _id="userprofilepage_20"></as-input>
+                        <div class="btn">
+                            <as-button variant="primary" _id="userprofilepage_21">Save</as-button>
+                        </div>
+                    </div>
+                </as-card>
+            </av-col>
+            <av-col size="12" size_md="6">
+                <as-card class="settings-card">
+                    <div class="settings-card-content">
+                        <div class="title">Change Password</div>
+                        <as-input label="Old Password" type="password"></as-input>
+                        <as-input label="New Password" type="password"></as-input>
+                        <as-input label="Repeat New Password" type="password"></as-input>
+                        <div class="btn">
+                            <as-button variant="primary">Save</as-button>
+                        </div>
+                    </div>
+                </as-card>
+            </av-col>
+        </av-row>
+    </as-tab>
+</as-tabs>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -19419,7 +19960,9 @@ const UserProfilePage = class UserProfilePage extends Aventus.Navigation.Page {
       "onPress": (e, pressInstance, c) => { c.comp.changeEmail(e, pressInstance); }
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                <as-package-card no_owner _id="userprofilepage_10"></as-package-card>            `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(`
+                <as-package-card no_owner _id="userprofilepage_10"></as-package-card>
+            `);templ0.setActions({
   "injection": [
     {
       "id": "userprofilepage_10",
@@ -19431,7 +19974,9 @@ const UserProfilePage = class UserProfilePage extends Aventus.Navigation.Page {
 });this.__getStatic().__template.addLoop({
                     anchorId: 'userprofilepage_9',
                     template: templ0,
-                simple:{data: "this.user.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`                <as-template-card no_owner _id="userprofilepage_13"></as-template-card>            `);templ1.setActions({
+                simple:{data: "this.user.packages",item:"p"}});const templ1 = new Aventus.Template(this);templ1.setTemplate(`
+                <as-template-card no_owner _id="userprofilepage_13"></as-template-card>
+            `);templ1.setActions({
   "injection": [
     {
       "id": "userprofilepage_13",
@@ -19443,7 +19988,15 @@ const UserProfilePage = class UserProfilePage extends Aventus.Navigation.Page {
 });this.__getStatic().__template.addLoop({
                     anchorId: 'userprofilepage_12',
                     template: templ1,
-                simple:{data: "this.user.templates",item:"p"}});const templ2 = new Aventus.Template(this);templ2.setTemplate(`                <av-link _id="userprofilepage_17">                    <div class="item">                        <span class="name" _id="userprofilepage_18"></span>                        <span>-</span>                        <div class="role" _id="userprofilepage_19"></div>                    </div>                </av-link>            `);templ2.setActions({
+                simple:{data: "this.user.templates",item:"p"}});const templ2 = new Aventus.Template(this);templ2.setTemplate(`
+                <av-link _id="userprofilepage_17">
+                    <div class="item">
+                        <span class="name" _id="userprofilepage_18"></span>
+                        <span>-</span>
+                        <div class="role" _id="userprofilepage_19"></div>
+                    </div>
+                </av-link>
+            `);templ2.setActions({
   "content": {
     "userprofilepage_17°to": {
       "fct": (c) => `/org/${c.print(c.comp.__11865033adb591bd7ee8cecbe17eb1e3method13(c.data.org))}`,
@@ -20265,7 +20818,29 @@ const TemplateCard = class TemplateCard extends Aventus.WebComponent {
     }
     __getHtml() {
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<av-router-link class="template-card-link" _id="templatecard_0">    <div class="template-card">        <div>            <h3 class="template-name" _id="templatecard_1"></h3>            <p class="template-description" _id="templatecard_2"></p>        </div>        <div class="template-footer">            <div class="template-tags">                <template _id="templatecard_3"></template>            </div>            <div class="template-meta">                <av-router-link class="template-author" _id="templatecard_5">                    <as-user-img class="author-avatar" _id="templatecard_6"></as-user-img>                    <span _id="templatecard_7"></span>                </av-router-link>                <div class="template-downloads">                    <mi-icon icon="download" class="icon-xs"></mi-icon>                    <span _id="templatecard_8"></span>                </div>            </div>        </div>    </div></av-router-link>` }
+        blocks: { 'default':`<av-router-link class="template-card-link" _id="templatecard_0">
+    <div class="template-card">
+        <div>
+            <h3 class="template-name" _id="templatecard_1"></h3>
+            <p class="template-description" _id="templatecard_2"></p>
+        </div>
+        <div class="template-footer">
+            <div class="template-tags">
+                <template _id="templatecard_3"></template>
+            </div>
+            <div class="template-meta">
+                <av-router-link class="template-author" _id="templatecard_5">
+                    <as-user-img class="author-avatar" _id="templatecard_6"></as-user-img>
+                    <span _id="templatecard_7"></span>
+                </av-router-link>
+                <div class="template-downloads">
+                    <mi-icon icon="download" class="icon-xs"></mi-icon>
+                    <span _id="templatecard_8"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</av-router-link>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -20303,7 +20878,9 @@ const TemplateCard = class TemplateCard extends Aventus.WebComponent {
       "once": true
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                     <span class="template-tag" _id="templatecard_4"></span>                `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(` 
+                    <span class="template-tag" _id="templatecard_4"></span>
+                `);templ0.setActions({
   "content": {
     "templatecard_4°@HTML": {
       "fct": (c) => `${c.print(c.comp.__8431eccc896d4a5b9e4413d318e76618method4(c.data.tag))}`,
@@ -20389,7 +20966,29 @@ const PackageCard = class PackageCard extends Aventus.WebComponent {
     }
     __getHtml() {
     this.__getStatic().__template.setHTML({
-        blocks: { 'default':`<av-router-link class="package-card-link" _id="packagecard_0">    <div class="package-card">        <div>            <h3 class="package-name" _id="packagecard_1"></h3>            <p class="package-description" _id="packagecard_2"></p>        </div>        <div class="package-footer">            <div class="package-tags">                <template _id="packagecard_3"></template>            </div>            <div class="package-meta">                <av-router-link class="package-author" _id="packagecard_5">                    <as-user-img class="author-avatar" _id="packagecard_6"></as-user-img>                    <span _id="packagecard_7"></span>                </av-router-link>                <div class="package-downloads">                    <mi-icon icon="download" class="icon-xs"></mi-icon>                    <span _id="packagecard_8"></span>                </div>            </div>        </div>    </div></av-router-link>` }
+        blocks: { 'default':`<av-router-link class="package-card-link" _id="packagecard_0">
+    <div class="package-card">
+        <div>
+            <h3 class="package-name" _id="packagecard_1"></h3>
+            <p class="package-description" _id="packagecard_2"></p>
+        </div>
+        <div class="package-footer">
+            <div class="package-tags">
+                <template _id="packagecard_3"></template>
+            </div>
+            <div class="package-meta">
+                <av-router-link class="package-author" _id="packagecard_5">
+                    <as-user-img class="author-avatar" _id="packagecard_6"></as-user-img>
+                    <span _id="packagecard_7"></span>
+                </av-router-link>
+                <div class="package-downloads">
+                    <mi-icon icon="download" class="icon-xs"></mi-icon>
+                    <span _id="packagecard_8"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</av-router-link>` }
     });
 }
     __registerTemplateAction() { super.__registerTemplateAction();this.__getStatic().__template.setActions({
@@ -20427,7 +21026,9 @@ const PackageCard = class PackageCard extends Aventus.WebComponent {
       "once": true
     }
   ]
-});const templ0 = new Aventus.Template(this);templ0.setTemplate(`                     <span class="package-tag" _id="packagecard_4"></span>                `);templ0.setActions({
+});const templ0 = new Aventus.Template(this);templ0.setTemplate(` 
+                    <span class="package-tag" _id="packagecard_4"></span>
+                `);templ0.setActions({
   "content": {
     "packagecard_4°@HTML": {
       "fct": (c) => `${c.print(c.comp.__9889d5032f655f5f060fcc03aefaedc9method4(c.data.tag))}`,
