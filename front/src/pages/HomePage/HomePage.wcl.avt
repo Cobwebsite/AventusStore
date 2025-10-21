@@ -39,14 +39,10 @@ export class HomePage extends Page implements Aventus.DefaultComponent {
         return {};
     }
 
-    protected async loadData() {
+    public override async loadData(state: Aventus.State): Promise<boolean | Aventus.State | string> {
         this.packages = await Process.execute(new PackageRandomController().request({ number: 4 })) ?? [];
         this.templates = await Process.execute(new TemplateRandomController().request({ number: 4 })) ?? [];
-    }
-
-    protected override postCreation(): void {
-        super.postCreation();
-        this.loadData();
+        return true;
     }
     //#endregion
 

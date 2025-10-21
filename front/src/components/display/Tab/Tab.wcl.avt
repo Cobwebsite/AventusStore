@@ -1,4 +1,4 @@
-import type { IconType } from "MaterialIcon@Main:MaterialIcon.package.avt";
+import type { IconType } from "MaterialIcon:MaterialIcon.package.avt";
 
 export class Tab extends Aventus.Layout.Tabs.Tab implements Aventus.DefaultComponent {
 

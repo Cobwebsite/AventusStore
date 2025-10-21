@@ -1,6 +1,6 @@
 import { ToastElement } from "Aventus@UI:Aventus.Toast.package.avt";
 import { sleep } from "Aventus@Main:Aventus.package.avt";
-import type { IconType } from "MaterialIcon@Main:MaterialIcon.package.avt";
+import type { IconType } from "MaterialIcon:MaterialIcon.package.avt";
 
 export type ToastOptions = Aventus.Toast.ToastOptions & {
     type?: 'success' | 'info' | 'danger' | 'warning',

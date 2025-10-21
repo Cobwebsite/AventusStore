@@ -18,9 +18,7 @@
 				"Aventus@Main":{},
 				"Aventus@UI": {},
 				"Aventus@Php": {},
-				"MaterialIcon@Main": {
-					"isLocal": true
-				}
+				"MaterialIcon": "1.0.0"
 			}
 		}
 	],

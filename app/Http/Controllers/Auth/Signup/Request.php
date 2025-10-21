@@ -17,7 +17,7 @@ class Request extends AventusRequest
     public function rules(): array
     {
         return [
-            'username' => ['required', 'unique:organizations,name', 'unique:users,username'],
+            'username' => ['required', 'unique:users,username'],
         ];
     }
 }
