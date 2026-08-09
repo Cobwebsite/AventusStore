@@ -1,4 +1,4 @@
-import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Page, type PageConfig } from "Aventus@UI:Aventus.Navigation.package.avt";
 import { Converter } from 'showdown';
 import { PackageDetailsController } from "../../../generated/app/Http/Controllers/Package/Details/Controller.lib.avt";
 import type { PackageDetailsResource } from "../../../generated/app/Http/Controllers/Package/PackageDetailsResource.lib.avt";
@@ -45,7 +45,7 @@ export class PackageDetailsPage extends Page implements Aventus.DefaultComponent
     /**
      * @inheritdoc
      */
-    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+    public override configure(): Aventus.Asyncable<PageConfig> {
         return {};
     }
 

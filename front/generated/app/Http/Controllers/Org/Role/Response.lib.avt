@@ -3,8 +3,8 @@ import { RoleEnum } from '../../../../Enums/RoleEnum.lib.avt';
 namespace App.Http.Controllers.Org.Role {
 
 	@Convertible()
-	export class Response {
-		public static get Fullname(): string { return "App.Http.Controllers.Org.Role.Response"; }
+	export class Response extends Aventus.Data  {
+		public static override get Fullname(): string { return "App.Http.Controllers.Org.Role.Response"; }
 		public role?: RoleEnum = undefined;
 	}
 

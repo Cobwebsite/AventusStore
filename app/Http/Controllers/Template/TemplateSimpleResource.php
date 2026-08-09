@@ -19,6 +19,7 @@ class TemplateSimpleResource extends AventusModelResource
     public ?string $fromImg;
     public string $isUser;
     public array $tags = [];
+    public bool $isGlobal = false;
 
     protected function bind($item): void
     {
@@ -26,6 +27,7 @@ class TemplateSimpleResource extends AventusModelResource
         $this->description = $item->description;
         $this->version = $item->version;
         $this->downloads = $item->downloads;
+        $this->isGlobal = $item->is_global;
 
         if ($item->user != null) {
             $this->fromName = $item->user->username;

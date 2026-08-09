@@ -88,6 +88,7 @@ class Controller
         $now = Carbon::now();
         $template->version = $request->version;
         $template->release_date = $now;
+        $template->is_global = $request->is_global;
         $template->is_project = $request->is_project;
         $template->save();
 

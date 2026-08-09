@@ -1,4 +1,4 @@
-import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Page, type PageConfig } from "Aventus@UI:Aventus.Navigation.package.avt";
 import { PackageSearchController } from "../../../generated/app/Http/Controllers/Package/Search/Controller.lib.avt";
 import type { PackageSimpleResource } from "../../../generated/app/Http/Controllers/Package/PackageSimpleResource.lib.avt";
 import { Main } from "../../Main/Main.wcl.avt";
@@ -104,7 +104,7 @@ export class PackagesPage extends Page implements Aventus.DefaultComponent {
     /**
    * @inheritdoc
    */
-    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+    public override configure(): Aventus.Asyncable<PageConfig> {
         return {};
     }
 

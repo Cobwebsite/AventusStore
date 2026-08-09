@@ -24,6 +24,7 @@ class TemplateDetailsResource extends AventusModelResource
     public bool $isOwner = false;
     public ?string $repos;
     public ?string $doc;
+    public ?string $isGlobal;
 
     protected function bind($item): void
     {
@@ -34,6 +35,7 @@ class TemplateDetailsResource extends AventusModelResource
         $this->readme = $item->readme;
         $this->repos = $item->repos;
         $this->doc = $item->doc;
+        $this->isGlobal = $item->is_global;
 
         if ($item->user != null) {
             $this->fromName = $item->user->username;

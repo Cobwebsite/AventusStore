@@ -13,6 +13,7 @@ class Request extends AventusRequest
     public string $name;
     public ?string $description;
     public string $version;
+    public bool $is_global;
     public bool $is_project;
     public ?string $organization;
     public UploadedFile $templateFile;

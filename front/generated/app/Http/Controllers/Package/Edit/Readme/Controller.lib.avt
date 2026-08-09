@@ -7,6 +7,7 @@ namespace App.Http.Controllers.Package.Edit.Readme {
 		@BindThis()
 		public async request(name: string | number, body: Request): Promise<Aventus.ResultWithError<Response>> {
 			const request = new Aventus.HttpRequest(`${this.getPrefix()}/api/package/${name}/readme`, Aventus.HttpMethod.PUT);
+			request.enableMethodSpoofing();
 			request.setBody(body);
 			return await request.queryJSON<Response>(this.router);
 		}

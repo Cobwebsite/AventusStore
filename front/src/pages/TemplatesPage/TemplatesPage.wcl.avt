@@ -1,4 +1,4 @@
-import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Page, type PageConfig } from "Aventus@UI:Aventus.Navigation.package.avt";
 import type { TemplateSimpleResource } from "../../../generated/app/Http/Controllers/Template/TemplateSimpleResource.lib.avt";
 import { ActionGuard } from "Aventus@Main:Aventus.package.avt";
 import { TemplateSearchController } from "../../../generated/app/Http/Controllers/Template/Search/Controller.lib.avt";
@@ -104,7 +104,7 @@ export class TemplatesPage extends Page implements Aventus.DefaultComponent {
     /**
    * @inheritdoc
    */
-    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+    public override configure(): Aventus.Asyncable<PageConfig> {
         return {};
     }
 

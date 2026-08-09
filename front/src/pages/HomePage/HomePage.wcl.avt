@@ -1,4 +1,4 @@
-import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Page, type PageConfig } from "Aventus@UI:Aventus.Navigation.package.avt";
 import type { PackageSimpleResource } from "../../../generated/app/Http/Controllers/Package/PackageSimpleResource.lib.avt";
 import { PackageRandomController } from "../../../generated/app/Http/Controllers/Package/Random/Controller.lib.avt";
 import type { TemplateSimpleResource } from "../../../generated/app/Http/Controllers/Template/TemplateSimpleResource.lib.avt";
@@ -35,15 +35,21 @@ export class HomePage extends Page implements Aventus.DefaultComponent {
     /**
      * @inheritdoc
      */
-    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+    public override configure(): Aventus.Asyncable<PageConfig> {
         return {};
     }
 
     public override async loadData(state: Aventus.State): Promise<boolean | Aventus.State | string> {
         this.packages = await Process.execute(new PackageRandomController().request({ number: 4 })) ?? [];
         this.templates = await Process.execute(new TemplateRandomController().request({ number: 4 })) ?? [];
+<<<<<<< HEAD
         return true;
     }
+=======
+        return true
+    }
+   
+>>>>>>> 8835a8f (Update to new version)
     //#endregion
 
 }

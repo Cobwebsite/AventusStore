@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $repos
  * @property ?string $doc
  * @property int $downloads
+ * @property bool $is_global
  * @property bool $is_project
  * @property ?int $user_id
  * @property ?User $user
@@ -67,7 +68,8 @@ class Template extends AventusModel
     {
         return [
             "release_date" => 'datetime',
-            "is_project" => ToBoolCast::class
+            "is_project" => ToBoolCast::class,
+            "is_global" => ToBoolCast::class,
         ];
     }
 

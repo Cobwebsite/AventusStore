@@ -18,6 +18,7 @@ namespace App.Models {
 		public repos?: string = undefined;
 		public doc?: string = undefined;
 		public downloads!: number;
+		public is_global!: boolean;
 		public is_project!: boolean;
 		public user_id?: number = undefined;
 		public user?: User = undefined;

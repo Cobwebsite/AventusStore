@@ -51,7 +51,7 @@ export class Main extends Aventus.Navigation.Router implements Aventus.DefaultCo
     public constructor() {
         super();
         Main.instance = this;
-        this.indexResource = window['indexResource'] as IndexResource;
+        this.indexResource = (window as any)['indexResource'] as IndexResource;
         this.bearer = localStorage.getItem("token");
     }
     //#endregion
@@ -107,7 +107,7 @@ export class Main extends Aventus.Navigation.Router implements Aventus.DefaultCo
             rejectValue: null
         });
         Form.configure({
-            handleExecuteNoInputError: (errors) => {
+            onServerFallback: (errors) => {
                 if(errors.length > 0) {
                     let msg = errors.map(p => p.message.replace(/\n/g, '<br/>')).join("<br/>");
                     Alert.open({
@@ -116,7 +116,7 @@ export class Main extends Aventus.Navigation.Router implements Aventus.DefaultCo
                     });
                 }
             },
-            handleValidateNoInputError: (errors) => {
+            onValidateFallback: (errors) => {
                 const li: string[] = [];
                 for(let key in errors) {
                     if(errors[key]) {

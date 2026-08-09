@@ -5,6 +5,7 @@ namespace App.Http.Controllers.Remote.Template.Publish {
 		public name!: string;
 		public description?: string = undefined;
 		public version!: string;
+		public is_global!: boolean;
 		public is_project!: boolean;
 		public organization?: string = undefined;
 		public templateFile!: File;

@@ -14,11 +14,15 @@
 					"output": "../public/js/store.js"
 				}
 			],
-			"dependances": {
+			"dependencies": {
 				"Aventus@Main":{},
 				"Aventus@UI": {},
 				"Aventus@Php": {},
+<<<<<<< HEAD
 				"MaterialIcon": "1.0.0"
+=======
+				"MaterialIcon": "1.0.2"
+>>>>>>> 8835a8f (Update to new version)
 			}
 		}
 	],

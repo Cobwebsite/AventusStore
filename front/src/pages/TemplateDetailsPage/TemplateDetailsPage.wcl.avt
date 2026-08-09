@@ -1,4 +1,4 @@
-import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Page, type PageConfig } from "Aventus@UI:Aventus.Navigation.package.avt";
 import { Converter } from 'showdown';
 import { TemplateDetailsController } from "../../../generated/app/Http/Controllers/Template/Details/Controller.lib.avt";
 import type { TemplateDetailsResource } from "../../../generated/app/Http/Controllers/Template/TemplateDetailsResource.lib.avt";
@@ -43,7 +43,7 @@ export class TemplateDetailsPage extends Page implements Aventus.DefaultComponen
     /**
      * @inheritdoc
      */
-    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+    public override configure(): Aventus.Asyncable<PageConfig> {
         return {};
     }
 

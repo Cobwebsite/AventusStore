@@ -27,7 +27,6 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareErrorsFromSession::class,
         ]);
         $middleware->append(AventusMiddleware::class);
-        $middleware->appendToGroup('api', AventusAttributesMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         AventusExceptionCatcher::use($exceptions);

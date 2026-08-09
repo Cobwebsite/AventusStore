@@ -1,8 +1,8 @@
 namespace App.Http.Controllers.Template {
 
 	@Convertible()
-	export class TemplateDetailsResource {
-		public static get Fullname(): string { return "App.Http.Controllers.Template.TemplateDetailsResource"; }
+	export class TemplateDetailsResource extends Aventus.Data  {
+		public static override get Fullname(): string { return "App.Http.Controllers.Template.TemplateDetailsResource"; }
 		public name!: string;
 		public description!: string;
 		public version!: string;
@@ -15,6 +15,7 @@ namespace App.Http.Controllers.Template {
 		public isOwner: boolean = false;
 		public repos?: string = undefined;
 		public doc?: string = undefined;
+		public isGlobal?: string = undefined;
 	}
 
 }

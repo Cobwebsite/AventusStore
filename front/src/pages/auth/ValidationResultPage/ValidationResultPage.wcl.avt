@@ -1,4 +1,4 @@
-import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Page, type PageConfig } from "Aventus@UI:Aventus.Navigation.package.avt";
 import { Main } from "../../../Main/Main.wcl.avt";
 
 export class ValidationResultPage extends Page implements Aventus.DefaultComponent {
@@ -37,7 +37,7 @@ export class ValidationResultPage extends Page implements Aventus.DefaultCompone
     /**
      * @inheritdoc
      */
-    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+    public override configure(): Aventus.Asyncable<PageConfig> {
         return {
             title: this.is_success ? "Validation success | Aventus Store" : "Validation error | Aventus Store"
         };

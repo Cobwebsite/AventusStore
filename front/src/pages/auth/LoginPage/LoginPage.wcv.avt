@@ -10,7 +10,7 @@
 
 <div class="login-form-wrapper">
     <div class="login-form-card">
-        <div class="login-form">
+        <av-form class="login-form">
             <as-input label="Username" :form="this.form.parts.username" id="username" type="text"
                 autoComplete="username" @focus="clearError"></as-input>
 
@@ -34,6 +34,6 @@
                     Sign in
                 </as-button>
             </div>
-        </div>
+        </av-form>
     </div>
 </div>

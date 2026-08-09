@@ -1,4 +1,4 @@
-import { Page } from "Aventus@UI:Aventus.Navigation.package.avt";
+import { Page, type PageConfig } from "Aventus@UI:Aventus.Navigation.package.avt";
 import type { OrgDetailsResource } from "../../../generated/app/Http/Controllers/Org/OrgDetailsResource.lib.avt";
 import { Uri } from "Aventus@Main:Aventus.package.avt";
 import { OrgDetailsController } from "../../../generated/app/Http/Controllers/Org/Details/Controller.lib.avt";
@@ -58,7 +58,7 @@ export class OrganizationAdminPage extends Page implements Aventus.DefaultCompon
     /**
      * @inheritdoc
      */
-    public override configure(): Aventus.Asyncable<Page.PageConfig> {
+    public override configure(): Aventus.Asyncable<PageConfig> {
         return {};
     }
 

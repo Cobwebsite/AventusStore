@@ -10,11 +10,11 @@
 
 <div class="signup-form-wrapper">
     <div class="signup-form-card">
-        <div class="signup-form">
+        <av-form class="signup-form">
             <as-input id="username" label="Username" :form="this.form.parts.username"></as-input>
             <as-input id="email" label="Email" :form="this.form.parts.email"></as-input>
             <as-input id="password" label="Password" type="password" :form="this.form.parts.password"></as-input>
             <as-button type="submit" class="btn-full">Create account</as-button>
-        </div>
+        </av-form>
     </div>
 </div>

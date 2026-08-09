@@ -4,8 +4,8 @@ import { OrganizationPicture } from '../../../Models/OrganizationPicture.lib.avt
 namespace App.Http.Controllers.Org {
 
 	@Convertible()
-	export class OrgUserResource {
-		public static get Fullname(): string { return "App.Http.Controllers.Org.OrgUserResource"; }
+	export class OrgUserResource extends Aventus.Data  {
+		public static override get Fullname(): string { return "App.Http.Controllers.Org.OrgUserResource"; }
 		public packages!: PackageSimpleResource[];
 		public name!: string;
 		public role!: string;

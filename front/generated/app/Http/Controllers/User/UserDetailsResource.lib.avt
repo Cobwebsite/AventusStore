@@ -6,8 +6,8 @@ import { UserPicture } from '../../../Models/UserPicture.lib.avt';
 namespace App.Http.Controllers.User {
 
 	@Convertible()
-	export class UserDetailsResource {
-		public static get Fullname(): string { return "App.Http.Controllers.User.UserDetailsResource"; }
+	export class UserDetailsResource extends Aventus.Data  {
+		public static override get Fullname(): string { return "App.Http.Controllers.User.UserDetailsResource"; }
 		public packages!: PackageSimpleResource[];
 		public templates!: TemplateSimpleResource[];
 		public organizations!: OrgUserResource[];
