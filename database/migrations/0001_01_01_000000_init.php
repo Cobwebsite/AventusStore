@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -66,7 +66,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('description');
-            $table->text('readme')->default('');
+            $table->text('readme');
             $table->string('version');
             $table->integer('downloads')->default(0);
             $table->dateTime('release_date');
@@ -98,7 +98,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('description');
-            $table->text('readme')->default('');
+            $table->text('readme');
             $table->string('version');
             $table->integer('downloads')->default(0);
             $table->boolean('is_project');
@@ -137,12 +137,10 @@ return new class extends Migration
         });
 
 
-        $roles = ["Admin", "Dev"];
-        foreach ($roles as $role) {
-            $r = new Role();
-            $r->name = $role;
-            $r->save();
-        }
+        DB::table('roles')->insert([
+            ['name' => 'Admin'],
+            ['name' => 'Dev'],
+        ]);
     }
 
     /**

@@ -1,0 +1,62 @@
+name: aventus-store
+
+x-app: &app
+  image: cobwebsite/aventus-store:latest
+  restart: unless-stopped
+  env_file:
+    - .env
+  environment:
+    APP_ENV: production
+    APP_DEBUG: "false"
+    LOG_CHANNEL: stderr
+    DB_CONNECTION: mysql
+    DB_HOST: db
+    DB_PORT: "3306"
+    DB_DATABASE: ${DB_DATABASE:-aventusstore}
+    DB_USERNAME: root
+    DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD doit être défini dans .env}
+    CACHE_STORE: database
+    QUEUE_CONNECTION: database
+  volumes:
+    - ./storage/app:/var/www/html/storage/app
+
+services:
+  app:
+    <<: *app
+    container_name: aventus-store
+    command: >-
+      sh -c "php artisan migrate --force && exec apache2-foreground"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - proxy
+      - backend
+
+  db:
+    image: mysql:8.4
+    container_name: aventus-store-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-aventusstore}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD doit être défini dans .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks:
+      - backend
+
+networks:
+  proxy:
+    external: true
+    name: proxy
+  backend:
+    internal: true
+
+volumes:
+  mysql-data:

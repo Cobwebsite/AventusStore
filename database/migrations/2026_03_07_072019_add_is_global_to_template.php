@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('template', function (Blueprint $table) {
+        Schema::table('templates', function (Blueprint $table) {
             $table->boolean("is_global");
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('template', function (Blueprint $table) {
+        Schema::table('templates', function (Blueprint $table) {
             $table->dropColumn("is_global");
         });
     }
